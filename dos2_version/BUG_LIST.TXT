@@ -1,0 +1,260 @@
+[#]
+[Condition]     症状
+[Machine]       発生機種
+[MGSP Version]  問題発生のバージョン
+[State]         現在の状況
+--------------------------------------------------------------------------------
+[#] 023
+[Condition]
+	MGSファイルが一つも存在しないときに、ファイル一覧にゴミが表示される。
+	Garbage is displayed in the file list when none of the MGS files exist.
+
+[Machine]
+	all
+
+[MGSP Version]
+	20201029_0710
+
+[State]
+	修正済み (20201101_2315)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 024
+[Condition]
+	MGSファイルが一つも存在しないときに、ファイル一覧に再生中の強調表示がでる。
+	When none of the MGS files are present, "playing" is highlighted in the file list.
+
+[Machine]
+	all
+
+[MGSP Version]
+	20201029_0710
+
+[State]
+	修正済み (20201101_2315)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 025
+[Condition]
+	ジョイパッドのBボタンが効かない。
+	The B button on the joypad does not work.
+
+[Machine]
+	all
+
+[MGSP Version]
+	20201029_0710
+
+[State]
+	修正済み (20201101_2315)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 026
+[Condition]
+	再生が強制的に停止される場合に、鍵盤やレベルメーターに表示の残骸が残るバグを修正
+	Fixed a bug that left remnants of the display on the keyboard and level meter when playback is forced to stop.
+
+[Machine]
+	all
+
+[MGSP Version]
+	20201105_2300
+
+[State]
+	修正済み (20201109_0611)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 027
+[Condition]
+	INIファイルの最後の行がコメント行だとフリーズしてしまう
+	If the last line of the INI file is a comment line, it will freeze.
+
+[Machine]
+	all
+
+[MGSP Version]
+	20201120_0632
+
+[State]
+	修正済み (20201128_0710)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 028
+[Condition]
+	漢字フォントの一部の文字が化ける
+	Some characters in the kanji font are corrupted.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201128_0710)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 029
+[Condition]
+	ディレクトリエントリ順のソートが実行の度に変化する
+	The sort order of directory entries changes each time it is executed.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201215_2215)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 030
+[Condition]
+	ルートディレクトリでフォルダが無い場合に、自動再生開始すると、二曲目が再生される
+	If there is no folder in the root directory, the second song will be played when auto play is started.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201215_2215)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 031
+[Condition]
+	MSX-DOS1で実行した場合にエラー表示して暴走する。
+	When running on MSX-DOS1, it displays an error and runs out of control.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201215_2215)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 032
+[Condition]
+	LOOP回数操作のキーが、ずれている。
+	The key for the LOOP count operation is out of alignment.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201215_2215)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 033
+[Condition]
+	曲名の先読み機能が効いていない。
+	The song title look-ahead feature is not working.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201215_2215)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 034
+[Condition]
+	曲名表示・ファイル名表示の切り替え機能が無くなっている
+	The ability to switch between displaying song titles and file names has been removed.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201215_2215)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 035
+[Condition]
+	曲名ソートがうまく機能しない。
+	Song title sorting does not work properly.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201216_2200)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 036
+[Condition]
+	INIファイルの SORT_MODE が効かない
+	SORT_MODE in INI file does not work.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201218_0630)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 037
+[Condition]
+	進捗表示が崩れている
+	The progress indicator is broken.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20201218_2230)
+	Fixed it
+
+--------------------------------------------------------------------------------
+[#] 038
+[Condition]
+	プリロード完了前にディレクトリ移動すると暴走する場合がある
+	Changing directory before preload is complete may cause bugs.
+
+[Machine]
+	all
+
+[MGSP Version]
+	all
+
+[State]
+	修正済み (20210113_0655)
+	Fixed it

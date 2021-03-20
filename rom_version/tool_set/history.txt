@@ -1,0 +1,10 @@
+Jan.23.2021 6:20
+	(1) Fixed a bug where pressing [9] in Channel Mute would change the Mute state of other parts.
+
+--------------------------------------------------------------------------------
+Jan.15.2021 6:55
+	(1) Fixed a bug that the ROM file is not a multiple of 8192 bytes.
+
+--------------------------------------------------------------------------------
+Jan.14.2021 22:50
+	(1) First release

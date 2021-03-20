@@ -1,0 +1,49 @@
+v2.00 が出来上がったら、v2.01以降で搭載するかもしれません。
+
+■再生速度調整機能 ( Change the playback speed )
+	→ ★Implemented! 実装完了。
+
+■次、前 の再生曲移動 ( Next, Back )
+	→ ★Implemented! 実装完了。
+
+■シャッフル ( Shuffle )
+	→ ★Implemented! 実装完了。
+
+■プレイリストファイルへの対応 ( Playlist file )
+	→ 面倒なので対応しません。
+
+■全体のリピート再生 ( All songs on repeat )
+	→ 面倒なので対応しません。
+
+■所望の設定を記述した設定ファイルの読み込み対応
+	→ ★Implemented! 実装完了。
+
+■トラック毎のミュート ( Mute track )
+	→ ★Implemented! 実装完了。
+
+■トラック毎のボリューム変更 ( Change track volume )
+	→ 対応できません。
+
+■色選択 ( Color theme )
+	→ ★Implemented! 実装完了。
+
+■フェードアウト速度の調整 ( Adjusting the fade-out speed )
+	→ ★Implemented! 実装完了。
+
+■曲名読み取りを遅延処理して遅さを隠蔽 ( Hiding the Time to Read a Song Title )
+	→ ★Implemented! 実装完了。
+
+■ヘルプがスクロールしないことを示すため、ヘルプ表示の際にスクロールバーを消す
+	→ ★Implemented! 実装完了。
+
+■MGSDRV を自分から読みに行くようにする
+	→ ★Implemented! 実装完了。
+
+■ESCを押して即終了は、誤押しで終了して不便
+	→ ★Implemented! 実装完了。
+
+■キークリック音が鳴るので止めて欲しい
+	→ ★Implemented! 実装完了。
+
+■長い曲名をスクロール表示
+	→ ★Implemented! 実装完了。

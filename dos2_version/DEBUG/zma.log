@@ -1,0 +1,1037 @@
+Z80 Macro Assembler ZMA v1.0.9
+=====================================================
+Programmed by t.hara
+
+<< code >>
+[	INCLUDE ".//../msxbios.asm"] begin
+[	INCLUDE ".//../msxbios.asm"] end
+
+[	INCLUDE ".//../msxdos1.asm"] begin
+[	INCLUDE ".//../msxdos1.asm"] end
+
+[	INCLUDE ".//../msxdos2.asm"] begin
+[	INCLUDE ".//../msxdos2.asm"] end
+
+[	ORG 0X100]
+	code address: 0x000100
+
+[ENTRY ::]
+	global label address: 0x000100
+
+[	LD SP , [ TPA_BOTTOM ]] Z80:22cyc, R800:8cyc
+000100: ed 7b 06 00
+
+[	CALL MMAP_INIT] Z80:18cyc, R800:5cyc
+000104: cd a7 02
+
+[	LD DE , MSG_ENTRY] Z80:11cyc, R800:3cyc
+000107: 11 47 02
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+00010a: cd 99 02
+
+[	LD IX , [ MMAP_TABLE_PTR ]] Z80:22cyc, R800:8cyc
+00010d: dd 2a f4 02
+
+[	XOR A , A] Z80:5cyc, R800:1cyc
+000111: af
+
+[MAPPER_CHECK_LOOP ::]
+	global label address: 0x000112
+
+[	CALL DUMP_ONE] Z80:18cyc, R800:5cyc
+000112: cd 25 01
+
+[	JR C , EXIT_LOOP] Z80:13cyc(cond=true), 8cyc(cond=false), R800:3cyc(cond=true), 2cyc(cond=false)
+000115: 38 07
+
+[	LD DE , 8] Z80:11cyc, R800:3cyc
+000117: 11 08 00
+
+[	ADD IX , DE] Z80:17cyc, R800:2cyc
+00011a: dd 19
+
+[	JR MAPPER_CHECK_LOOP] Z80:13cyc, R800:3cyc
+00011c: 18 f4
+
+[EXIT_LOOP ::]
+	global label address: 0x00011e
+
+[	LD B , 0] Z80:8cyc, R800:2cyc
+00011e: 06 00
+
+[	LD C , D2F_TERM] Z80:8cyc, R800:2cyc
+000120: 0e 62
+
+[	JP BDOS] Z80:11cyc, R800:5cyc
+000122: c3 05 00
+
+[	SCOPE DUMP_ONE]
+	Scope path: DUMP_ONE:
+
+[DUMP_ONE ::]
+	global label address: 0x000125
+
+[	LD B , [ IX + 0 ]] Z80:21cyc, R800:7cyc
+000125: dd 46 00
+
+[	INC B] Z80:5cyc, R800:1cyc
+000128: 04
+
+[	DEC B] Z80:5cyc, R800:1cyc
+000129: 05
+
+[	SCF] Z80:5cyc, R800:1cyc
+00012a: 37
+
+[	RET Z] Z80:12cyc(branch), 6cyc(through), R800:5cyc(branch), 1cyc(through)
+00012b: c8
+
+[	PUSH AF] Z80:12cyc, R800:6cyc
+00012c: f5
+
+[	LD DE , MSG_SEPARATOR] Z80:11cyc, R800:3cyc
+00012d: 11 0c 02
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+000130: cd 99 02
+
+[	LD A , [ IX + 0 ]] Z80:21cyc, R800:7cyc
+000133: dd 7e 00
+
+[	CALL DEC2HEX] Z80:18cyc, R800:5cyc
+000136: cd 94 01
+
+[	POP AF] Z80:11cyc, R800:5cyc
+000139: f1
+
+[	PUSH AF] Z80:12cyc, R800:6cyc
+00013a: f5
+
+[	LD DE , MSG_PRIMARY_MAPPER_MARK] Z80:11cyc, R800:3cyc
+00013b: 11 3c 02
+
+[	OR A , A] Z80:5cyc, R800:1cyc
+00013e: b7
+
+[	CALL Z , PUTS] Z80:18cyc(branch), 11cyc(through), R800:5cyc(branch), 3cyc(through)
+00013f: cc 99 02
+
+[	LD DE , MSG_CRLF] Z80:11cyc, R800:3cyc
+000142: 11 09 02
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+000145: cd 99 02
+
+[	LD DE , MSG_TOTAL] Z80:11cyc, R800:3cyc
+000148: 11 be 01
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+00014b: cd 99 02
+
+[	LD A , [ IX + 1 ]] Z80:21cyc, R800:7cyc
+00014e: dd 7e 01
+
+[	CALL DEC2HEX] Z80:18cyc, R800:5cyc
+000151: cd 94 01
+
+[	LD DE , MSG_CRLF] Z80:11cyc, R800:3cyc
+000154: 11 09 02
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+000157: cd 99 02
+
+[	LD DE , MSG_FREE] Z80:11cyc, R800:3cyc
+00015a: 11 cc 01
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+00015d: cd 99 02
+
+[	LD A , [ IX + 2 ]] Z80:21cyc, R800:7cyc
+000160: dd 7e 02
+
+[	CALL DEC2HEX] Z80:18cyc, R800:5cyc
+000163: cd 94 01
+
+[	LD DE , MSG_CRLF] Z80:11cyc, R800:3cyc
+000166: 11 09 02
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+000169: cd 99 02
+
+[	LD DE , MSG_SYSTEM] Z80:11cyc, R800:3cyc
+00016c: 11 da 01
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+00016f: cd 99 02
+
+[	LD A , [ IX + 3 ]] Z80:21cyc, R800:7cyc
+000172: dd 7e 03
+
+[	CALL DEC2HEX] Z80:18cyc, R800:5cyc
+000175: cd 94 01
+
+[	LD DE , MSG_CRLF] Z80:11cyc, R800:3cyc
+000178: 11 09 02
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+00017b: cd 99 02
+
+[	LD DE , MSG_USER] Z80:11cyc, R800:3cyc
+00017e: 11 e8 01
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+000181: cd 99 02
+
+[	LD A , [ IX + 4 ]] Z80:21cyc, R800:7cyc
+000184: dd 7e 04
+
+[	CALL DEC2HEX] Z80:18cyc, R800:5cyc
+000187: cd 94 01
+
+[	LD DE , MSG_CRLF] Z80:11cyc, R800:3cyc
+00018a: 11 09 02
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+00018d: cd 99 02
+
+[	POP AF] Z80:11cyc, R800:5cyc
+000190: f1
+
+[	OR A , A] Z80:5cyc, R800:1cyc
+000191: b7
+
+[	INC A] Z80:5cyc, R800:1cyc
+000192: 3c
+
+[	RET] Z80:11cyc, R800:5cyc
+000193: c9
+
+[	ENDSCOPE]
+	Scope path: 
+
+[	SCOPE DEC2HEX]
+	Scope path: DEC2HEX:
+
+[DEC2HEX ::]
+	global label address: 0x000194
+
+[	LD B , A] Z80:5cyc, R800:2cyc
+000194: 47
+
+[	RRCA] Z80:5cyc, R800:1cyc
+000195: 0f
+
+[	RRCA] Z80:5cyc, R800:1cyc
+000196: 0f
+
+[	RRCA] Z80:5cyc, R800:1cyc
+000197: 0f
+
+[	RRCA] Z80:5cyc, R800:1cyc
+000198: 0f
+
+[	AND A , 0X0F] Z80:8cyc, R800:2cyc
+000199: e6 0f
+
+[	ADD A , 48] Z80:8cyc, R800:2cyc
+00019b: c6 30
+
+[	CP A , 57 + 1] Z80:8cyc, R800:2cyc
+00019d: fe 3a
+
+[	JR C , SKIP1] Z80:13cyc(cond=true), 8cyc(cond=false), R800:3cyc(cond=true), 2cyc(cond=false)
+00019f: 38 02
+
+[	ADD A , 65 - 48 - 10] Z80:8cyc, R800:2cyc
+0001a1: c6 07
+
+[SKIP1 :]
+	label address: 0x0001a3
+
+[	LD [ HEX2BYTE ] , A] Z80:14cyc, R800:6cyc
+0001a3: 32 bb 01
+
+[	LD A , B] Z80:5cyc, R800:2cyc
+0001a6: 78
+
+[	AND A , 0X0F] Z80:8cyc, R800:2cyc
+0001a7: e6 0f
+
+[	ADD A , 48] Z80:8cyc, R800:2cyc
+0001a9: c6 30
+
+[	CP A , 57 + 1] Z80:8cyc, R800:2cyc
+0001ab: fe 3a
+
+[	JR C , SKIP2] Z80:13cyc(cond=true), 8cyc(cond=false), R800:3cyc(cond=true), 2cyc(cond=false)
+0001ad: 38 02
+
+[	ADD A , 65 - 48 - 10] Z80:8cyc, R800:2cyc
+0001af: c6 07
+
+[SKIP2 :]
+	label address: 0x0001b1
+
+[	LD [ HEX2BYTE + 1 ] , A] Z80:14cyc, R800:6cyc
+0001b1: 32 bc 01
+
+[	LD DE , HEX2BYTE] Z80:11cyc, R800:3cyc
+0001b4: 11 bb 01
+
+[	CALL PUTS] Z80:18cyc, R800:5cyc
+0001b7: cd 99 02
+
+[	RET] Z80:11cyc, R800:5cyc
+0001ba: c9
+
+[HEX2BYTE ::]
+	global label address: 0x0001bb
+
+[	DS "00"]
+0001bb: 30 30
+
+[	DB 0]
+0001bd: 00
+
+[	ENDSCOPE]
+	Scope path: 
+
+[MSG_TOTAL ::]
+	global label address: 0x0001be
+
+[	DS "Total Seg. 0x"]
+0001be: 54 6f 74 61 6c 20 53 65
+0001c6: 67 2e 20 30 78
+
+[	DB 0]
+0001cb: 00
+
+[MSG_FREE ::]
+	global label address: 0x0001cc
+
+[	DS "Free Seg.  0x"]
+0001cc: 46 72 65 65 20 53 65 67
+0001d4: 2e 20 20 30 78
+
+[	DB 0]
+0001d9: 00
+
+[MSG_SYSTEM ::]
+	global label address: 0x0001da
+
+[	DS "System Seg.0x"]
+0001da: 53 79 73 74 65 6d 20 53
+0001e2: 65 67 2e 30 78
+
+[	DB 0]
+0001e7: 00
+
+[MSG_USER ::]
+	global label address: 0x0001e8
+
+[	DS "User Seg.  0x"]
+0001e8: 55 73 65 72 20 53 65 67
+0001f0: 2e 20 20 30 78
+
+[	DB 0]
+0001f5: 00
+
+[MSG_NOT_ENOUGH_MEMORY ::]
+	global label address: 0x0001f6
+
+[	DS "Not enough memory!!"]
+0001f6: 4e 6f 74 20 65 6e 6f 75
+0001fe: 67 68 20 6d 65 6d 6f 72
+000206: 79 21 21
+
+[MSG_CRLF ::]
+	global label address: 0x000209
+
+[	DB 0X0D , 0X0A , 0]
+000209: 0d 0a 00
+
+[MSG_SEPARATOR ::]
+	global label address: 0x00020c
+
+[	DS "================================"]
+00020c: 3d 3d 3d 3d 3d 3d 3d 3d
+000214: 3d 3d 3d 3d 3d 3d 3d 3d
+00021c: 3d 3d 3d 3d 3d 3d 3d 3d
+000224: 3d 3d 3d 3d 3d 3d 3d 3d
+
+[	DB 0X0D , 0X0A]
+00022c: 0d 0a
+
+[MSG_SLOT ::]
+	global label address: 0x00022e
+
+[	DS "Slot       0x"]
+00022e: 53 6c 6f 74 20 20 20 20
+000236: 20 20 20 30 78
+
+[	DB 0]
+00023b: 00
+
+[MSG_PRIMARY_MAPPER_MARK ::]
+	global label address: 0x00023c
+
+[	DS " (Primary)"]
+00023c: 20 28 50 72 69 6d 61 72
+000244: 79 29
+
+[	DB 0]
+000246: 00
+
+[MSG_ENTRY ::]
+	global label address: 0x000247
+
+[	DS "MemoryMapperInformation"]
+000247: 4d 65 6d 6f 72 79 4d 61
+00024f: 70 70 65 72 49 6e 66 6f
+000257: 72 6d 61 74 69 6f 6e
+
+[	DB 0X0D , 0X0A]
+00025e: 0d 0a
+
+[	DS "================================"]
+000260: 3d 3d 3d 3d 3d 3d 3d 3d
+000268: 3d 3d 3d 3d 3d 3d 3d 3d
+000270: 3d 3d 3d 3d 3d 3d 3d 3d
+000278: 3d 3d 3d 3d 3d 3d 3d 3d
+
+[	DB 0X0D , 0X0A]
+000280: 0d 0a
+
+[	DS "Programmed by HRA!"]
+000282: 50 72 6f 67 72 61 6d 6d
+00028a: 65 64 20 62 79 20 48 52
+000292: 41 21
+
+[	DB 0X0D , 0X0A]
+000294: 0d 0a
+
+[	DB 0X0D , 0X0A , 0]
+000296: 0d 0a 00
+
+[	INCLUDE ".//../stdio.asm"] begin
+[	SCOPE PUTS]
+	Scope path: PUTS:
+
+[PUTS ::]
+	global label address: 0x000299
+
+[	LD A , [ DE ]] Z80:8cyc, R800:4cyc
+000299: 1a
+
+[	INC DE] Z80:7cyc, R800:1cyc
+00029a: 13
+
+[	OR A , A] Z80:5cyc, R800:1cyc
+00029b: b7
+
+[	RET Z] Z80:12cyc(branch), 6cyc(through), R800:5cyc(branch), 1cyc(through)
+00029c: c8
+
+[	PUSH DE] Z80:12cyc, R800:6cyc
+00029d: d5
+
+[	LD C , D1F_DIRIO] Z80:8cyc, R800:2cyc
+00029e: 0e 06
+
+[	LD E , A] Z80:5cyc, R800:2cyc
+0002a0: 5f
+
+[	CALL BDOS] Z80:18cyc, R800:5cyc
+0002a1: cd 05 00
+
+[	POP DE] Z80:11cyc, R800:5cyc
+0002a4: d1
+
+[	JR PUTS] Z80:13cyc, R800:3cyc
+0002a5: 18 f2
+
+[	ENDSCOPE]
+	Scope path: 
+
+[	INCLUDE ".//../stdio.asm"] end
+
+[	INCLUDE ".//../memmapper.asm"] begin
+[	SCOPE MMAP_INIT]
+	Scope path: MMAP_INIT:
+
+[MMAP_INIT ::]
+	global label address: 0x0002a7
+
+[	LD A , [ HOKVLD ]] Z80:14cyc, R800:6cyc
+0002a7: 3a 20 fb
+
+[	AND A , 1] Z80:8cyc, R800:2cyc
+0002aa: e6 01
+
+[	RET Z] Z80:12cyc(branch), 6cyc(through), R800:5cyc(branch), 1cyc(through)
+0002ac: c8
+
+[	XOR A , A] Z80:5cyc, R800:1cyc
+0002ad: af
+
+[	LD DE , 0X0401] Z80:11cyc, R800:3cyc
+0002ae: 11 01 04
+
+[	CALL EXTBIO] Z80:18cyc, R800:5cyc
+0002b1: cd ca ff
+
+[	OR A , A] Z80:5cyc, R800:1cyc
+0002b4: b7
+
+[	RET Z] Z80:12cyc(branch), 6cyc(through), R800:5cyc(branch), 1cyc(through)
+0002b5: c8
+
+[	LD [ MMAP_TABLE_PTR ] , HL] Z80:17cyc, R800:7cyc
+0002b6: 22 f4 02
+
+[	LD DE , 0X0402] Z80:11cyc, R800:3cyc
+0002b9: 11 02 04
+
+[	CALL EXTBIO] Z80:18cyc, R800:5cyc
+0002bc: cd ca ff
+
+[	LD DE , MAPPER_JUMP_TABLE] Z80:11cyc, R800:3cyc
+0002bf: 11 f8 02
+
+[	LD BC , 16 * 3] Z80:11cyc, R800:3cyc
+0002c2: 01 30 00
+
+[	LDIR] Z80:23cyc(BC!=0), 18cyc(BC=0), R800:?cyc(BC!=0), 7cyc(BC=0)
+0002c5: ed b0
+
+[	CALL MAPPER_GET_P1] Z80:18cyc, R800:5cyc
+0002c7: cd 19 03
+
+[	LD [ MAPPER_SEGMENT_P1 ] , A] Z80:14cyc, R800:6cyc
+0002ca: 32 f6 02
+
+[	CALL MAPPER_GET_P2] Z80:18cyc, R800:5cyc
+0002cd: cd 1f 03
+
+[	LD [ MAPPER_SEGMENT_P2 ] , A] Z80:14cyc, R800:6cyc
+0002d0: 32 f7 02
+
+[	OR A , A] Z80:5cyc, R800:1cyc
+0002d3: b7
+
+[	INC A] Z80:5cyc, R800:1cyc
+0002d4: 3c
+
+[	RET] Z80:11cyc, R800:5cyc
+0002d5: c9
+
+[	ENDSCOPE]
+	Scope path: 
+
+[	SCOPE MMAP_CHANGE_TO_TPA]
+	Scope path: MMAP_CHANGE_TO_TPA:
+
+[MMAP_CHANGE_TO_TPA ::]
+	global label address: 0x0002d6
+
+[	LD H , 0X40] Z80:8cyc, R800:2cyc
+0002d6: 26 40
+
+[	LD A , [ RAMAD1 ]] Z80:14cyc, R800:6cyc
+0002d8: 3a 42 f3
+
+[	CALL ENASLT] Z80:18cyc, R800:5cyc
+0002db: cd 24 00
+
+[	LD H , 0X80] Z80:8cyc, R800:2cyc
+0002de: 26 80
+
+[	LD A , [ RAMAD2 ]] Z80:14cyc, R800:6cyc
+0002e0: 3a 43 f3
+
+[	CALL ENASLT] Z80:18cyc, R800:5cyc
+0002e3: cd 24 00
+
+[	LD A , [ MAPPER_SEGMENT_P1 ]] Z80:14cyc, R800:6cyc
+0002e6: 3a f6 02
+
+[	CALL MAPPER_PUT_P1] Z80:18cyc, R800:5cyc
+0002e9: cd 16 03
+
+[	LD A , [ MAPPER_SEGMENT_P2 ]] Z80:14cyc, R800:6cyc
+0002ec: 3a f7 02
+
+[	CALL MAPPER_PUT_P2] Z80:18cyc, R800:5cyc
+0002ef: cd 1c 03
+
+[	EI] Z80:5cyc, R800:1cyc
+0002f2: fb
+
+[	RET] Z80:11cyc, R800:5cyc
+0002f3: c9
+
+[	ENDSCOPE]
+	Scope path: 
+
+[MMAP_TABLE_PTR ::]
+	global label address: 0x0002f4
+
+[	DW 0]
+0002f4: 00 00
+
+[MAPPER_SEGMENT_P1 :]
+	label address: 0x0002f6
+
+[	DB 0]
+0002f6: 00
+
+[MAPPER_SEGMENT_P2 :]
+	label address: 0x0002f7
+
+[	DB 0]
+0002f7: 00
+
+[MAPPER_JUMP_TABLE ::]
+	global label address: 0x0002f8
+
+[MAPPER_ALL_SEG ::]
+	global label address: 0x0002f8
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+0002f8: c9 c9 c9
+
+[MAPPER_FRE_SEG ::]
+	global label address: 0x0002fb
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+0002fb: c9 c9 c9
+
+[MAPPER_RD_SEG ::]
+	global label address: 0x0002fe
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+0002fe: c9 c9 c9
+
+[MAPPER_WR_SEG ::]
+	global label address: 0x000301
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000301: c9 c9 c9
+
+[MAPPER_CAL_SEG ::]
+	global label address: 0x000304
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000304: c9 c9 c9
+
+[MAPPER_CALLS ::]
+	global label address: 0x000307
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000307: c9 c9 c9
+
+[MAPPER_PUT_PH ::]
+	global label address: 0x00030a
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+00030a: c9 c9 c9
+
+[MAPPER_GET_PH ::]
+	global label address: 0x00030d
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+00030d: c9 c9 c9
+
+[MAPPER_PUT_P0 ::]
+	global label address: 0x000310
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000310: c9 c9 c9
+
+[MAPPER_GET_P0 ::]
+	global label address: 0x000313
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000313: c9 c9 c9
+
+[MAPPER_PUT_P1 ::]
+	global label address: 0x000316
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000316: c9 c9 c9
+
+[MAPPER_GET_P1 ::]
+	global label address: 0x000319
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000319: c9 c9 c9
+
+[MAPPER_PUT_P2 ::]
+	global label address: 0x00031c
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+00031c: c9 c9 c9
+
+[MAPPER_GET_P2 ::]
+	global label address: 0x00031f
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+00031f: c9 c9 c9
+
+[MAPPER_PUT_P3 ::]
+	global label address: 0x000322
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000322: c9 c9 c9
+
+[MAPPER_GET_P3 ::]
+	global label address: 0x000325
+
+[	DB 0XC9 , 0XC9 , 0XC9]
+000325: c9 c9 c9
+
+[	INCLUDE ".//../memmapper.asm"] end
+
+<< label >>
+BDOS 5 ( 0x5 )
+BEEP 192 ( 0xc0 )
+BIGFIL 363 ( 0x16b )
+BREAKV 62245 ( 0xf325 )
+BREAKX 183 ( 0xb7 )
+CALATR 135 ( 0x87 )
+CALBAS 345 ( 0x159 )
+CALLF 48 ( 0x30 )
+CALPAT 132 ( 0x84 )
+CALSLT 28 ( 0x1c )
+CHGCAP 306 ( 0x132 )
+CHGCLR 98 ( 0x62 )
+CHGCPU 384 ( 0x180 )
+CHGET 159 ( 0x9f )
+CHGMOD 95 ( 0x5f )
+CHGSND 309 ( 0x135 )
+CHKRAM 0 ( 0x0 )
+CHPUT 162 ( 0xa2 )
+CHRGTR 16 ( 0x10 )
+CHSNS 156 ( 0x9c )
+CLPRIM 62348 ( 0xf38c )
+CLRSPR 105 ( 0x69 )
+CLS 195 ( 0xc3 )
+CNVCHR 171 ( 0xab )
+D1F_ALLOC 27 ( 0x1b )
+D1F_AUXIN 3 ( 0x3 )
+D1F_AUXOUT 4 ( 0x4 )
+D1F_BUFIN 10 ( 0xa )
+D1F_CONIN 1 ( 0x1 )
+D1F_CONOUT 2 ( 0x2 )
+D1F_CONST 11 ( 0xb )
+D1F_CPMVER 12 ( 0xc )
+D1F_CURDRV 25 ( 0x19 )
+D1F_DIRIN 7 ( 0x7 )
+D1F_DIRIO 6 ( 0x6 )
+D1F_DPARM 49 ( 0x31 )
+D1F_DSKRST 13 ( 0xd )
+D1F_FCLOSE 16 ( 0x10 )
+D1F_FDEL 19 ( 0x13 )
+D1F_FMAKE 22 ( 0x16 )
+D1F_FOPEN 15 ( 0xf )
+D1F_FREN 23 ( 0x17 )
+D1F_FSIZE 35 ( 0x23 )
+D1F_GDATE 42 ( 0x2a )
+D1F_GTIME 44 ( 0x2c )
+D1F_INNOE 8 ( 0x8 )
+D1F_LOGIN 24 ( 0x18 )
+D1F_LSTOUT 5 ( 0x5 )
+D1F_RDABS 47 ( 0x2f )
+D1F_RDBLK 39 ( 0x27 )
+D1F_RDRND 33 ( 0x21 )
+D1F_RDSEQ 20 ( 0x14 )
+D1F_SDATE 43 ( 0x2b )
+D1F_SELDSK 14 ( 0xe )
+D1F_SETDTA 26 ( 0x1a )
+D1F_SETRND 36 ( 0x24 )
+D1F_SFIRST 17 ( 0x11 )
+D1F_SNEXT 18 ( 0x12 )
+D1F_STIME 45 ( 0x2d )
+D1F_STROUT 9 ( 0x9 )
+D1F_TERM0 0 ( 0x0 )
+D1F_VERIFY 46 ( 0x2e )
+D1F_WRABS 48 ( 0x30 )
+D1F_WRBLK 38 ( 0x26 )
+D1F_WRRND 34 ( 0x22 )
+D1F_WRSEQ 21 ( 0x15 )
+D1F_WRZER 40 ( 0x28 )
+D2E_DATA 250 ( 0xfa )
+D2E_DISK 253 ( 0xfd )
+D2E_IFAT 242 ( 0xf2 )
+D2E_IFORM 240 ( 0xf0 )
+D2E_NCOMP 255 ( 0xff )
+D2E_NDOS 246 ( 0xf6 )
+D2E_NOUPB 241 ( 0xf1 )
+D2E_NRDY 252 ( 0xfc )
+D2E_RNF 249 ( 0xf9 )
+D2E_SEEK 243 ( 0xf3 )
+D2E_SUCCESS 0 ( 0x0 )
+D2E_UFORM 247 ( 0xf7 )
+D2E_VERFY 251 ( 0xfb )
+D2E_WDISK 245 ( 0xf5 )
+D2E_WFILE 244 ( 0xf4 )
+D2E_WPROT 248 ( 0xf8 )
+D2E_WRERR 254 ( 0xfe )
+D2F_ASSIGN 106 ( 0x6a )
+D2F_ATTR 80 ( 0x50 )
+D2F_BUFFER 105 ( 0x69 )
+D2F_CHDIR 90 ( 0x5a )
+D2F_CHKCHR 93 ( 0x5d )
+D2F_CLOSE 69 ( 0x45 )
+D2F_CREATE 68 ( 0x44 )
+D2F_DEFAB 99 ( 0x63 )
+D2F_DEFER 100 ( 0x64 )
+D2F_DELETE 77 ( 0x4d )
+D2F_DOSVER 111 ( 0x6f )
+D2F_DSKCHK 110 ( 0x6e )
+D2F_DUP 71 ( 0x47 )
+D2F_ENSURE 70 ( 0x46 )
+D2F_ERROR 101 ( 0x65 )
+D2F_EXPLAIN 102 ( 0x66 )
+D2F_FENV 109 ( 0x6d )
+D2F_FFIRST 64 ( 0x40 )
+D2F_FLUSH 95 ( 0x5f )
+D2F_FNEW 66 ( 0x42 )
+D2F_FNEXT 65 ( 0x41 )
+D2F_FORK 96 ( 0x60 )
+D2F_FORMAT 103 ( 0x67 )
+D2F_FTIME 81 ( 0x51 )
+D2F_GENV 107 ( 0x6b )
+D2F_GETCD 89 ( 0x59 )
+D2F_GETVFY 88 ( 0x58 )
+D2F_HATTR 85 ( 0x55 )
+D2F_HDELETE 82 ( 0x52 )
+D2F_HFTIME 86 ( 0x56 )
+D2F_HGETDTA 87 ( 0x57 )
+D2F_HMOVE 84 ( 0x54 )
+D2F_HRENAME 83 ( 0x53 )
+D2F_HTEST 76 ( 0x4c )
+D2F_IOCTL 75 ( 0x4b )
+D2F_JOIN 97 ( 0x61 )
+D2F_MOVE 79 ( 0x4f )
+D2F_OPEN 67 ( 0x43 )
+D2F_PARSE 91 ( 0x5b )
+D2F_PFILE 92 ( 0x5c )
+D2F_RAMD 104 ( 0x68 )
+D2F_READ 72 ( 0x48 )
+D2F_REDIR 112 ( 0x70 )
+D2F_RENAME 78 ( 0x4e )
+D2F_SEEK 74 ( 0x4a )
+D2F_SENV 108 ( 0x6c )
+D2F_TERM 98 ( 0x62 )
+D2F_WPATH 94 ( 0x5e )
+D2F_WRITE 73 ( 0x49 )
+DCOMPR 32 ( 0x20 )
+DEC2HEX 404 ( 0x194 )
+DEC2HEX:SKIP1 419 ( 0x1a3 )
+DEC2HEX:SKIP2 433 ( 0x1b1 )
+DEVICE 64921 ( 0xfd99 )
+DISKVE 62243 ( 0xf323 )
+DISSCR 65 ( 0x41 )
+DMA 128 ( 0x80 )
+DSPFNK 207 ( 0xcf )
+DUMP_ONE 293 ( 0x125 )
+ENASCR 68 ( 0x44 )
+ENASLT 36 ( 0x24 )
+ENTRY 256 ( 0x100 )
+EOL 360 ( 0x168 )
+ERAFNK 204 ( 0xcc )
+EXBRSA 64248 ( 0xfaf8 )
+EXIT_LOOP 286 ( 0x11e )
+EXPTBL 64705 ( 0xfcc1 )
+EXTBIO 65482 ( 0xffca )
+EXTROM 351 ( 0x15f )
+FIB_ATTRIBUTE 14 ( 0xe )
+FIB_ATTR_ARCHIVE 32 ( 0x20 )
+FIB_ATTR_DEVICE 128 ( 0x80 )
+FIB_ATTR_DIRECTORY 16 ( 0x10 )
+FIB_ATTR_HIDDEN 2 ( 0x2 )
+FIB_ATTR_READ_ONLY 1 ( 0x1 )
+FIB_ATTR_RESERVED 64 ( 0x40 )
+FIB_ATTR_SYSTEM 4 ( 0x4 )
+FIB_ATTR_VOLUME 8 ( 0x8 )
+FIB_CLUSTER 19 ( 0x13 )
+FIB_DRIVE 25 ( 0x19 )
+FIB_FILENAME 1 ( 0x1 )
+FIB_INTERNAL 26 ( 0x1a )
+FIB_SIGNATURE 0 ( 0x0 )
+FIB_SIZE 21 ( 0x15 )
+FIB_UPDATE_DATE 17 ( 0x11 )
+FIB_UPDATE_TIME 15 ( 0xf )
+FILVRM 86 ( 0x56 )
+FNKSB 201 ( 0xc9 )
+FNKSTR 63615 ( 0xf87f )
+GETCPU 387 ( 0x183 )
+GETYPR 40 ( 0x28 )
+GICINI 144 ( 0x90 )
+GRPPRT 141 ( 0x8d )
+GSPSIZ 138 ( 0x8a )
+GTPAD 219 ( 0xdb )
+GTPDL 222 ( 0xde )
+GTSTCK 213 ( 0xd5 )
+GTTRIG 216 ( 0xd8 )
+HEX2BYTE 443 ( 0x1bb )
+HOKVLD 64288 ( 0xfb20 )
+INIFNK 62 ( 0x3e )
+INIGRP 114 ( 0x72 )
+INIMLT 117 ( 0x75 )
+INIT32 111 ( 0x6f )
+INITIO 59 ( 0x3b )
+INITXT 108 ( 0x6c )
+INLIN 177 ( 0xb1 )
+ISFLIO 330 ( 0x14a )
+KEYINT 56 ( 0x38 )
+KILBUF 342 ( 0x156 )
+LDIRMV 89 ( 0x59 )
+LDIRVM 92 ( 0x5c )
+LPTOUT 165 ( 0xa5 )
+LPTSTT 168 ( 0xa8 )
+MAPPER_ALL_SEG 760 ( 0x2f8 )
+MAPPER_CALLS 775 ( 0x307 )
+MAPPER_CAL_SEG 772 ( 0x304 )
+MAPPER_CHECK_LOOP 274 ( 0x112 )
+MAPPER_FRE_SEG 763 ( 0x2fb )
+MAPPER_GET_P0 787 ( 0x313 )
+MAPPER_GET_P1 793 ( 0x319 )
+MAPPER_GET_P2 799 ( 0x31f )
+MAPPER_GET_P3 805 ( 0x325 )
+MAPPER_GET_PH 781 ( 0x30d )
+MAPPER_JUMP_TABLE 760 ( 0x2f8 )
+MAPPER_PUT_P0 784 ( 0x310 )
+MAPPER_PUT_P1 790 ( 0x316 )
+MAPPER_PUT_P2 796 ( 0x31c )
+MAPPER_PUT_P3 802 ( 0x322 )
+MAPPER_PUT_PH 778 ( 0x30a )
+MAPPER_RD_SEG 766 ( 0x2fe )
+MAPPER_SEGMENT_P1 758 ( 0x2f6 )
+MAPPER_SEGMENT_P2 759 ( 0x2f7 )
+MAPPER_WR_SEG 769 ( 0x301 )
+MASTERS 62280 ( 0xf348 )
+MMAP_CHANGE_TO_TPA 726 ( 0x2d6 )
+MMAP_FREE_SEG 2 ( 0x2 )
+MMAP_INIT 679 ( 0x2a7 )
+MMAP_RESERVED 5 ( 0x5 )
+MMAP_SLOT 0 ( 0x0 )
+MMAP_SYS_SEG 3 ( 0x3 )
+MMAP_TABLE_PTR 756 ( 0x2f4 )
+MMAP_TOTAL_SEG 1 ( 0x1 )
+MMAP_USER_SEG 4 ( 0x4 )
+MSG_CRLF 521 ( 0x209 )
+MSG_ENTRY 583 ( 0x247 )
+MSG_FREE 460 ( 0x1cc )
+MSG_NOT_ENOUGH_MEMORY 502 ( 0x1f6 )
+MSG_PRIMARY_MAPPER_MARK 572 ( 0x23c )
+MSG_SEPARATOR 524 ( 0x20c )
+MSG_SLOT 558 ( 0x22e )
+MSG_SYSTEM 474 ( 0x1da )
+MSG_TOTAL 446 ( 0x1be )
+MSG_USER 488 ( 0x1e8 )
+NMI 102 ( 0x66 )
+NRDVRM 372 ( 0x174 )
+NSETRD 366 ( 0x16e )
+NSTWRT 369 ( 0x171 )
+NWRVRM 375 ( 0x177 )
+OLDSCR 64688 ( 0xfcb0 )
+OUTDLP 333 ( 0x14d )
+OUTDO 24 ( 0x18 )
+PCMPLY 390 ( 0x186 )
+PCMREC 393 ( 0x189 )
+PINLIN 174 ( 0xae )
+POSIT 198 ( 0xc6 )
+PROCNM 64905 ( 0xfd89 )
+PUTS 665 ( 0x299 )
+QINLIN 180 ( 0xb4 )
+RAMAD0 62273 ( 0xf341 )
+RAMAD1 62274 ( 0xf342 )
+RAMAD2 62275 ( 0xf343 )
+RAMAD3 62276 ( 0xf344 )
+RDPRIM 62336 ( 0xf380 )
+RDPSG 150 ( 0x96 )
+RDRES 378 ( 0x17a )
+RDSLT 12 ( 0xc )
+RDVDP 318 ( 0x13e )
+RDVRM 74 ( 0x4a )
+RG0SAV 62431 ( 0xf3df )
+RG1SAV 62432 ( 0xf3e0 )
+RG2SAV 62433 ( 0xf3e1 )
+RG3SAV 62434 ( 0xf3e2 )
+RG4SAV 62435 ( 0xf3e3 )
+RG5SAV 62436 ( 0xf3e4 )
+RG6SAV 62437 ( 0xf3e5 )
+RG7SAV 62438 ( 0xf3e6 )
+RG8SAV 65511 ( 0xffe7 )
+RG9SAV 65512 ( 0xffe8 )
+RSLREG 312 ( 0x138 )
+SCRMOD 64687 ( 0xfcaf )
+SETGRP 126 ( 0x7e )
+SETMLT 129 ( 0x81 )
+SETRD 80 ( 0x50 )
+SETT32 123 ( 0x7b )
+SETTXT 120 ( 0x78 )
+SETWRT 83 ( 0x53 )
+SLTATR 64713 ( 0xfcc9 )
+SLTTBL 64709 ( 0xfcc5 )
+SLTWRK 64777 ( 0xfd09 )
+SNSMAT 321 ( 0x141 )
+STATFL 62439 ( 0xf3e7 )
+STMOTR 243 ( 0xf3 )
+STRTMS 153 ( 0x99 )
+SUBROM 348 ( 0x15c )
+SUB_BEEP 381 ( 0x17d )
+SUB_CALATR 253 ( 0xfd )
+SUB_CALPAT 249 ( 0xf9 )
+SUB_CHGCLR 273 ( 0x111 )
+SUB_CHGMDP 437 ( 0x1b5 )
+SUB_CHGMOD 209 ( 0xd1 )
+SUB_CLRSPR 245 ( 0xf5 )
+SUB_CLSSUB 277 ( 0x115 )
+SUB_DSPFNK 285 ( 0x11d )
+SUB_GETPAT 261 ( 0x105 )
+SUB_GETPLT 329 ( 0x149 )
+SUB_GSPSIZ 257 ( 0x101 )
+SUB_GTPPRT 137 ( 0x89 )
+SUB_INIGRP 221 ( 0xdd )
+SUB_INIMLT 225 ( 0xe1 )
+SUB_INIPLT 321 ( 0x141 )
+SUB_INIT32 217 ( 0xd9 )
+SUB_INITXT 213 ( 0xd5 )
+SUB_KNJPRT 445 ( 0x1bd )
+SUB_NEWPAD 429 ( 0x1ad )
+SUB_NVBXFL 205 ( 0xcd )
+SUB_NVBXLN 201 ( 0xc9 )
+SUB_PROMPT 385 ( 0x181 )
+SUB_RDVRM 269 ( 0x10d )
+SUB_REDCLK 501 ( 0x1f5 )
+SUB_RSTPLT 325 ( 0x145 )
+SUB_SETGRP 237 ( 0xed )
+SUB_SETMLT 241 ( 0xf1 )
+SUB_SETPAG 317 ( 0x13d )
+SUB_SETPLT 333 ( 0x14d )
+SUB_SETT32 233 ( 0xe9 )
+SUB_SETTXT 229 ( 0xe5 )
+SUB_VDPSTA 305 ( 0x131 )
+SUB_WRTCLK 505 ( 0x1f9 )
+SUB_WRTVDP 301 ( 0x12d )
+SUB_WRTVRM 265 ( 0x109 )
+SYNCHR 8 ( 0x8 )
+TAPIN 228 ( 0xe4 )
+TAPIOF 231 ( 0xe7 )
+TAPION 225 ( 0xe1 )
+TAPOOF 240 ( 0xf0 )
+TAPOON 234 ( 0xea )
+TAPOUT 237 ( 0xed )
+TOTEXT 210 ( 0xd2 )
+TPA_BOTTOM 6 ( 0x6 )
+WRPRIM 62341 ( 0xf385 )
+WRRES 381 ( 0x17d )
+WRSLT 20 ( 0x14 )
+WRTPSG 147 ( 0x93 )
+WRTVDP 71 ( 0x47 )
+WRTVRM 77 ( 0x4d )
+WSLREG 315 ( 0x13b )

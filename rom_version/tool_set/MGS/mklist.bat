@@ -1,0 +1,1 @@
+dir *.mgs > mgslist.txt
