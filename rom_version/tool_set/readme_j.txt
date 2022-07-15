@@ -1,10 +1,10 @@
-MGSP version 2.1.2 ROM版	Copyright (C) 2021 HRA!
+MGSP version 2.1.4 ROM版	Copyright (C) 2021-2022 HRA!
 
 1. はじめに
 	MegaROMカートリッジ用のソフト作成の練習として作りました。
 	ROM上の曲しか再生できませんし、どんなに大きなROMを用意しても
 	最大192曲までしか対応していません。
-	一方で、通常版 MGSP v2.1.1 と異なり、DOS2/Nextor や 64KBを越える
+	一方で、通常版 MGSP v2.1.4 と異なり、DOS2/Nextor や 64KBを越える
 	RAMは必要ありませんし、MSX1用の メモリマッパー非対応の拡張RAM
 	カートリッジも利用可能です。
 	SCCも、SCC搭載ゲームカートリッジに対応していますので、

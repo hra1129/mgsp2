@@ -1107,7 +1107,7 @@ grp_begin_progress_bar::
 		ld		a, 15
 		ld		[mgsp_progress_bar +  0 + 3], a
 		ld		[mgsp_progress_bar +  4 + 3], a
-		ld		a, 1
+		ld		a, 4
 		ld		[mgsp_progress_bar +  8 + 3], a
 		ld		[mgsp_progress_bar + 12 + 3], a
 		xor		a, a
@@ -1125,17 +1125,11 @@ grp_begin_progress_bar::
 ; ==============================================================================
 		scope	grp_end_progress_bar
 grp_end_progress_bar::
-		; 進捗バースプライトの色を指定
+		; 指定したアトリビュートを 0フィル
+		ld		hl, 0x1B00 + 16 * 4
 		xor		a, a
-		ld		[mgsp_progress_bar +  0 + 3], a
-		ld		[mgsp_progress_bar +  4 + 3], a
-		ld		[mgsp_progress_bar +  8 + 3], a
-		ld		[mgsp_progress_bar + 12 + 3], a
-		; 指定したアトリビュートを VRAM へコピー
-		ld		de, 0x1B00 + 16 * 4
-		ld		hl, mgsp_progress_bar
 		ld		bc, 4 * 4
-		jp		LDIRVM
+		jp		FILVRM
 		endscope
 
 ; ==============================================================================
