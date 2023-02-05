@@ -1,3 +1,7 @@
+Feb.6.2023 6:51
+	(1) Fixed a bug that misidentified the number of files in the song title display.
+
+--------------------------------------------------------------------------------
 Jan.23.2021 6:20
 	(1) Fixed a bug where pressing [9] in Channel Mute would change the Mute state of other parts.
 

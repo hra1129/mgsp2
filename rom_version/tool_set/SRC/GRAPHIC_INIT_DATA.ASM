@@ -86,10 +86,10 @@ mgsp_keyboard_spot_attrib::			; スプライトアトリビュートテーブル
 mgsp_name::
 		ds		"MGSP"
 mgsp_version::
-		ds		" Version 2.1.4R"
+		ds		" Version 2.1.6R"
 		db		0
 mgsp_copyright::
-		ds		"Copyright (C)2021-2022 HRA!"
+		ds		"Copyright (C)2021-2023 HRA!"
 		db		0
 mgsp_volume::
 		ds		"Vol:"

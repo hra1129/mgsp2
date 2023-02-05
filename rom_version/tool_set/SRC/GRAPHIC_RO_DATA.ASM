@@ -67,7 +67,7 @@ grp_help_line1::
 		ds		"<< Keyboard >>"
 		db		0
 grp_help_line2::
-		ds		"[ÅM]-[ÅK],[SFT]+[ÅM][ÅN]:Sel.File. [1]-[9][Q]-[I]:T-Mute."
+		ds		"[ÅD]-[ÅB],[SFT]+[ÅD][ÅE]:Sel.File. [1]-[9][Q]-[I]:T-Mute."
 		db		0
 grp_help_line3::
 		ds		"[A]-[F]:Sort/Shuffle. [^][\\]:LoopCount. [Z][X]:Back/Next."
@@ -85,16 +85,16 @@ grp_help_line7::
 		ds		"<< Joypad >>"
 		db		0
 grp_help_line8::
-		ds		"[ÅM][ÅN],[A]+[ÅM][ÅN]:Sel.File. [ÅL]:UpDir. [ÅK]:Play."
+		ds		"[ÅD][ÅE],[A]+[ÅD][ÅE]:Sel.File. [ÅC]:UpDir. [ÅB]:Play."
 		db		0
 grp_help_line9::
-		ds		"[A]+[ÅL][ÅK]:Vol. [B]+[ÅM][ÅN]:LoopCount."
+		ds		"[A]+[ÅC][ÅB]:Vol. [B]+[ÅD][ÅE]:LoopCount."
 		db		0
 grp_help_line10::
-		ds		"[B]+[ÅL]:Stop. [B]+[ÅK]:PlayMem. [A]+[B]+[ÅM]:Exit"
+		ds		"[B]+[ÅC]:Stop. [B]+[ÅB]:PlayMem. [A]+[B]+[ÅD]:Exit"
 		db		0
 grp_help_line11::
-		ds		"[A]+[B]+[ÅK][ÅL]:Sort"
+		ds		"[A]+[B]+[ÅB][ÅC]:Sort"
 		db		0
 
 		;		 0         1         2         3         4         5         6
@@ -118,7 +118,7 @@ grp_license_line6::
 		ds		"    https://gigamix.hatenablog.com/entry/mgsdrv/"
 		db		0
 grp_license_line7::
-		ds		"Å˚ÅŒÅöÅÇÅ™Åï BDF Å˙ (Misaki Font BDF Version)"
+		ds		"ÅuÅkÅ_ÅSÅeÅZ BDF Åt (Misaki Font BDF Version)"
 		db		0
 grp_license_line8::
 		ds		"    Copyright(C) 2002-2019 Num Kadoma"
@@ -127,7 +127,7 @@ grp_license_line9::
 		ds		"    http://littlelimit.net/"
 		db		0
 grp_license_line10::
-		ds		"MGSP Version 2.1.2R Copyright(C) 2021 HRA!"
+		ds		"MGSP Version 2.1.6R Copyright(C) 2021-2023 HRA!"
 		db		0
 grp_license_line11::
 		ds		"    http://hraroom.s602.xrea.com/msx/software/mgsp.html"

@@ -1,7 +1,7 @@
 ; ==============================================================================
 ;   MGSP ROM version
 ;
-;  Copyright (C) 2020 Takayuki Hara (HRA!)
+;  Copyright (C) 2020-2022 Takayuki Hara (HRA!)
 ;  All rights reserved.
 ;                           http://hraroom.s602.xrea.com/msx/software/mgsp.html
 ;
@@ -700,5 +700,11 @@ kanji_address::
 ; MGSƒtƒ@ƒCƒ‹
 ; ==============================================================================
 		binary_link	"MGS_PACK.BIN"
-		align		8192
+
+		scope		post_mgs_padding
+padding_size	= (8192 - ($ % 8192)) % 8192
+			repeat	I, 0, padding_size
+				db		((I % 3) == 0) ? 0x32 : ((I % 3) == 1) ? (rom_bank1 & 255) : (rom_bank1 >> 8)
+			endr
+		endscope
 end_of_program::

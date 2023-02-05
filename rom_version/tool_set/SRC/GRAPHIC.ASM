@@ -419,8 +419,7 @@ title_copy_loop_exit:
 		inc		c
 		inc		b
 		ld		a, c
-		ld		hl, fl_files
-		cp		a, [hl]
+		cp		a, fl_files
 		ld		a, b
 		jr		z, clear_space
 		cp		a, 11
