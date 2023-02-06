@@ -703,8 +703,6 @@ kanji_address::
 
 		scope		post_mgs_padding
 padding_size	= (8192 - ($ % 8192)) % 8192
-			repeat	I, 0, padding_size
-				db		((I % 3) == 0) ? 0x32 : ((I % 3) == 1) ? (rom_bank1 & 255) : (rom_bank1 >> 8)
-			endr
+			space	padding_size, 0xFF
 		endscope
 end_of_program::

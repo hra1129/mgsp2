@@ -1,4 +1,4 @@
-MGSP version 2.1.2 ROM	Copyright (C) 2021 HRA!
+MGSP version 2.1.6 ROM	Copyright (C) 2021-2023 HRA!
 
 1. Introduction
 	I made this as an exercise in creating software for MegaROM cartridges.
