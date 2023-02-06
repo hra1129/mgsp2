@@ -1,4 +1,4 @@
-MGSP version 2.1.3		Copyright (C) 2020 HRA!
+MGSP version 2.1.6		Copyright (C) 2020-2023 HRA!
 
 ■概要
 　MGSDRVによる演奏をサポートする MGSファイルプレイヤーです。
@@ -79,4 +79,4 @@ MGSDRV v3.20以降が必要です（v3.20未満では動作を確認していません。）
 　HRA! hra@mvj.biglobe.ne.jp
 
 　一次配布サイト
-　http://hraroom.s602.xrea.com/msx/software/mgsp.html
+　https://github.com/hra1129/mgsp2

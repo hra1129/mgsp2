@@ -1,4 +1,4 @@
-MGSP version 2.1.3		Copyright (C) 2020 HRA!
+MGSP version 2.1.6		Copyright (C) 2020-2023 HRA!
 
 [See in TAB width 4 characters]
 
@@ -75,4 +75,4 @@ it will be ignored without displaying any error messages, etc.
   HRA! hra@mvj.biglobe.ne.jp
 
   Primary Distribution Sites
-  http://hraroom.s602.xrea.com/msx/software/mgsp.html
+  https://github.com/hra1129/mgsp2
