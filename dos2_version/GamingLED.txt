@@ -1,0 +1,27 @@
+send_cmd1byte( E )
+	poke( 0x7F00, 0x00 );
+	poke( 0x7F00, 0x43 );	//開始コード
+	poke( 0x7F00, 0x00 );
+	poke( 0x7F00, E );
+
+send_cmd2byte( E, B )
+	poke( 0x7F00, 0x00 );
+	poke( 0x7F00, 0x43 );	//開始コード
+	poke( 0x7F00, 0x00 );
+	poke( 0x7F00, E );
+	poke( 0x7F00, 0x00 );
+	poke( 0x7F00, B );
+
+send_cmd4byte( E, B, C, D )
+
+_LED_PT(4)
+	send_cmd2byte( cl_pat, (4 << 1) | 1 )
+
+_LED_POS(n)
+	send_cmd2byte( cl_pos, (n << 1) | 1 )
+
+_LEDC_RGB(r,g,b)
+	send_cmd4byte( cl_c_rgb, r, g, b )
+
+_LED_DRAW
+	send_cmd1byte( cl_draw )

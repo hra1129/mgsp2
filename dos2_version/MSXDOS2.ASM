@@ -3,7 +3,7 @@
 ;
 ;  Copyright (C) 2020 Takayuki Hara (HRA!)
 ;  All rights reserved.
-;                           http://hraroom.s602.xrea.com/msx/software/mgsp.html
+;                                              https://github.com/hra1129/mgsp2
 ;
 ;  本ソフトウェアおよび本ソフトウェアに基づいて作成された派生物は、以下の条件を
 ;  満たす場合に限り、再頒布および使用が許可されます。

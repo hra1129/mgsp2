@@ -3,7 +3,7 @@
 ;
 ;  Copyright (C) 2020 Takayuki Hara (HRA!)
 ;  All rights reserved.
-;                           http://hraroom.s602.xrea.com/msx/software/mgsp.html
+;                                              https://github.com/hra1129/mgsp2
 ;
 ;  本ソフトウェアおよび本ソフトウェアに基づいて作成された派生物は、以下の条件を
 ;  満たす場合に限り、再頒布および使用が許可されます。
@@ -97,6 +97,7 @@ grp_track_volume:				; +0: current volume level, +1: track volume level
 		db		0, 0			; track F
 		db		0, 0			; track G
 		db		0, 0			; track H
+		db		0				; dummy for GamingLED
 grp_yes_no:
 		db		0				; 0: Yes, 1: No
 
