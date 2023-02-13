@@ -121,7 +121,7 @@ detect_gaming_led::
 		ld			ix, getcpu
 		call		calslt
 		or			a, a
-		jr			c, skip_for_z80
+		jr			z, skip_for_z80
 		; R800‚È‚çA‘—MŠÖ”‚ğ R800—p‚É‚·‚è‘Ö‚¦‚é
 		ld			hl, game_led_send_for_r800
 		ld			[game_led_send_function + 1], hl

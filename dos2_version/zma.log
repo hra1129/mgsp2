@@ -6700,9 +6700,9 @@ LINE# |OFFSET|ADDR|MNEMONIC
       |      |    |  Z80:5cyc R800:1cyc
       |000A5C|0B5C|  B7
 ------+------+----+----------------------------------
-   124|      |    |JR C, SKIP_FOR_Z80
+   124|      |    |JR Z, SKIP_FOR_Z80
       |      |    |  Z80:13cyc/8cyc R800:3cyc/2cyc
-      |000A5D|0B5D|  38 06
+      |000A5D|0B5D|  28 06
 ------+------+----+----------------------------------
    126|      |    |LD HL, GAME_LED_SEND_FOR_R800
       |      |    |  Z80:11cyc R800:3cyc
