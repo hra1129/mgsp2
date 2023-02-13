@@ -110,6 +110,23 @@ gled_signature			:= 0x4010
 ; ==============================================================================
 		scope		detect_gaming_led
 detect_gaming_led::
+		; turboR?
+		ld			a, [exptbl]
+		ld			hl, 0x002D
+		call		rdslt
+		cp			a, 3
+		jr			c, skip_for_z80
+		; turboRなら、CPUタイプを調べる
+		ld			iy, [exptbl - 1]
+		ld			ix, getcpu
+		call		calslt
+		or			a, a
+		jr			c, skip_for_z80
+		; R800なら、送信関数を R800用にすり替える
+		ld			hl, game_led_send_for_r800
+		ld			[game_led_send_function + 1], hl
+	skip_for_z80:
+
 		; 基本スロットを調べる
 		xor			a, a
 	loop_for_primary_slot:
@@ -147,18 +164,7 @@ detect_gaming_led::
 		; 初期化のためのコマンド送信
 		ld			hl, command
 		ld			b, command_end - command
-	send_command_loop:
-		xor			a, a
-		ld			[gled_command_port], a
-		nop
-		nop
-		nop
-		ld			a, [hl]
-		ld			[gled_command_port], a
-		nop
-		nop
-		nop
-		djnz		send_command_loop
+		call		game_led_send_function
 
 		; 一致したので戻る
 		pop			af
@@ -184,10 +190,79 @@ detect_gaming_led::
 	s_signature:
 		db			"MSXLED"
 	command:
+		; _LED_DEMOOFF
+		db			gled_c_cmd_st, gled_cl_off
+		db			0									; for wait dummy
 		; _LED_PT(4)
-		db			gled_c_cmd_st
-		db			gled_cl_pat, (4 << 1) | 1
+		db			gled_c_cmd_st, gled_cl_pat, (4 << 1) | 1
+		db			0									; for wait dummy
+		db			gled_c_cmd_st, gled_cl_draw
 	command_end:
+		endscope
+
+; ==============================================================================
+;	gaming LED send function
+;	input)
+;		none
+;	output)
+;		none
+;	break)
+;		all
+;	comment)
+;		Z80用
+; ==============================================================================
+		scope		game_led_send_for_z80
+game_led_send_for_z80::
+	send_command_loop:
+		xor			a, a
+		ld			[gled_command_port], a
+		nop
+		nop
+		nop
+		ld			a, [hl]
+		ld			[gled_command_port], a
+		inc			hl
+		nop
+		nop
+		nop
+		djnz		send_command_loop
+		ret
+		endscope
+
+; ==============================================================================
+;	gaming LED send function
+;	input)
+;		none
+;	output)
+;		none
+;	break)
+;		all
+;	comment)
+;		Z80用
+; ==============================================================================
+		scope		game_led_send_for_r800
+game_led_send_for_r800::
+	send_command_loop:
+		di
+		xor			a, a
+		ld			[gled_command_port], a
+		call		wait
+		ld			a, [hl]
+		ld			[gled_command_port], a
+		inc			hl
+		call		wait
+		djnz		send_command_loop
+		ei
+		ret
+	wait:
+		in			a, [0xE6]				; SystemTimer
+		ld			c, a
+	loop:
+		in			a, [0xE6]
+		sub			a, c
+		cp			a, 3
+		jr			c, loop
+		ret
 		endscope
 
 ; ==============================================================================
@@ -244,7 +319,6 @@ gaming_led_1tick::
 		call		update_volume
 		call		update_volume
 		call		update_volume
-
 		ld			de, parameter_rgb2
 		call		update_volume
 		call		update_volume
@@ -257,19 +331,7 @@ gaming_led_1tick::
 		; コマンドを送信する
 		ld			b, command_end - command_start
 		ld			hl, command_start
-	send_loop:
-		xor			a, a
-		ld			[gled_command_port], a
-		nop
-		nop
-		nop
-		ld			a, [hl]
-		ld			[gled_command_port], a
-		inc			hl
-		nop
-		nop
-		nop
-		djnz		send_loop
+		call		game_led_send_function
 
 		; 次のステートへ遷移
 		ld			a, [game_led_state]
@@ -289,7 +351,6 @@ gaming_led_1tick::
 
 	update_volume:
 		ld			a, [hl]
-		xor			a, 15				; 0 が最大なので反転させる
 		add			a, a				; 0～15 → 0～120
 		add			a, a
 		add			a, a
@@ -313,6 +374,7 @@ gaming_led_1tick::
 		db			0									; for wait dummy
 	command_draw1:
 		db			gled_c_cmd_st, gled_cl_draw
+		db			0									; for wait dummy
 	command_pos2:
 		db			gled_c_cmd_st, gled_cl_pos
 	parameter_pos2:
@@ -349,3 +411,5 @@ game_led_slot::
 		db			0					; GamingLEDカートリッジが存在するスロット番号。0x00 なら存在しない。
 game_led_state::
 		db			0					; どのLEDを制御するか 0～4
+game_led_send_function::
+		jp			game_led_send_for_z80
