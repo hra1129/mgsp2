@@ -136,25 +136,25 @@ detect_gaming_led::
 		xor			a, a
 	loop_for_primary_slot:
 		; 拡張スロットの有無を調べる
-		ld			b, a							; スロット番号をバックアップ
+		ld			b, a
 		add			a, exptbl & 0x0FF
 		ld			h, exptbl >> 8
 		ld			l, a
 		ld			a, [hl]
-		or			a, a							; 符号ビットを見る
-		ld			a, b							; スロット番号を復元、フラグ不変
-		jp			p, have_not_secondary_slot_1	; 符号ビットが立っていなければ(正の値ならば)拡張スロット無し
+		or			a, a
+		ld			a, b							; フラグ不変
+		ld			[game_led_slot], a				; フラグ不変
+		jp			p, have_not_secondary_slot_1
 		; 拡張スロットが存在する場合
 		or			a, 0x80
 	loop_for_secondary_slot:
 		; 1スロットのチェック
 	have_not_secondary_slot_1:
-		ld			[game_led_slot], a				; スロット番号仮決め
-		push		af								; enaslt で破壊されないように A をスタックへ待避
+		push		af
 		; 指定のスロットに切り替えて +4010h: "MSXLED" の存在を確かめる
 		ld			h, 0x40
-		call		enaslt							; page1 を指定のスロットに変える
-		; - シグネチャ MSXLED の存在確認
+		call		enaslt
+
 		ld			hl, gled_signature
 		ld			de, s_signature
 		ld			b, 6
@@ -198,7 +198,7 @@ detect_gaming_led::
 		; _LED_DEMOOFF
 		db			gled_c_cmd_st, gled_cl_off, 0
 		; _LED_PT(4)
-		db			gled_c_cmd_st, gled_cl_pat, (4 << 1) | 1, 0
+		db			gled_c_cmd_st, gled_cl_pat, (4 << 1) | 1
 		; _LED_DRAW
 		db			gled_c_cmd_st, gled_cl_draw
 	command_end:
@@ -222,12 +222,12 @@ game_led_send_for_z80::
 		ld			[gled_command_port], a
 		nop
 		nop
+		nop
 		ld			a, [hl]
-		nop
 		ld			[gled_command_port], a
-		nop
-		nop
 		inc			hl
+		nop
+		nop
 		nop
 		djnz		send_command_loop
 		ret
@@ -292,26 +292,52 @@ gaming_led_1tick::
 		or			a, a
 		ret			z
 
+		; 着目しているトラック情報のアドレス
+		ld			a, [game_led_state]
+		or			a, a
+		jr			nz, state_1
+
 		; 音量情報を更新
+	state_0:
 		ld			de, grp_track_volume
-		ld			c, (0 << 1) | 1
 		ld			hl, parameter_rgb1
-		call		update_volume		; LED1
-		call		update_volume		; LED2
-		call		update_volume		; LED3
-		call		update_volume		; LED4
-		call		update_volume		; LED5
-		call		update_volume		; LED6
-		call		update_volume		; LED7
-		call		update_volume		; LED8
-		call		update_volume		; LED9
-		call		update_volume		; LED10
+		ld			b, (0 << 1) | 1
+		call		update_volume
+		ld			hl, parameter_rgb2
+		ld			b, (1 << 1) | 1
+		call		update_volume
+		ld			hl, parameter_rgb3
+		ld			b, (2 << 1) | 1
+		call		update_volume
+		ld			hl, parameter_rgb4
+		ld			b, (3 << 1) | 1
+		call		update_volume
+		ld			hl, parameter_rgb5
+		ld			b, (4 << 1) | 1
+		call		update_volume
+		jp			send_command
+	state_1:
+		ld			de, grp_track_volume + 2 * 5
+		ld			hl, parameter_rgb1
+		ld			b, (5 << 1) | 1
+		call		update_volume
+		ld			hl, parameter_rgb2
+		ld			b, (6 << 1) | 1
+		call		update_volume
+		ld			hl, parameter_rgb3
+		ld			b, (7 << 1) | 1
+		call		update_volume
+		ld			hl, parameter_rgb4
+		ld			b, (8 << 1) | 1
+		call		update_volume
+		ld			hl, parameter_rgb5
+		ld			b, (9 << 1) | 1
+		call		update_volume
 
 	send_command:
 		; GamingLEDカートリッジに切り替える
-		ld			a, [game_led_slot]
 		ld			h, 0x40
-		call		enaslt			; DI
+		call		enaslt
 
 		; コマンドを送信する
 		ld			b, command_end - command_start
@@ -323,10 +349,15 @@ gaming_led_1tick::
 		ld			a, [ramad1]
 		call		enaslt
 		ei
+
+		; 状態を更新
+		ld			a, [game_led_state]
+		xor			a, 1
+		ld			[game_led_state], a
 		ret
 
 	update_volume:
-		ld			[hl], c
+		ld			[hl], b
 		inc			hl
 		ld			b, 3
 	update_volume_loop:
@@ -341,38 +372,61 @@ gaming_led_1tick::
 		inc			de
 		inc			hl
 		djnz		update_volume_loop
-		ld			a, c
-		add			a, 1 << 1			; next position
-		ld			c, a
 		ret
 
 	command_start:
-		db			gled_c_cmd_st, gled_cl_p_rgball
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb1:
+		db			(0 << 1) | 1									; POS 0
 		db			0, 0, 0											; R, G, B
+		db			gled_c_cmd_st, gled_cl_draw
+		db			0												; wait
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb2:
+		db			(1 << 1) | 1									; POS 1
 		db			0, 0, 0											; R, G, B
+		db			gled_c_cmd_st, gled_cl_draw
+		db			0												; wait
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb3:
+		db			(2 << 1) | 1									; POS 2
 		db			0, 0, 0											; R, G, B
+		db			gled_c_cmd_st, gled_cl_draw
+		db			0												; wait
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb4:
+		db			(3 << 1) | 1									; POS 3
 		db			0, 0, 0											; R, G, B
+		db			gled_c_cmd_st, gled_cl_draw
+		db			0												; wait
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb5:
+		db			(4 << 1) | 1									; POS 4
 		db			0, 0, 0											; R, G, B
-	parameter_rgb6:
-		db			0, 0, 0											; R, G, B
-	parameter_rgb7:
-		db			0, 0, 0											; R, G, B
-	parameter_rgb8:
-		db			0, 0, 0											; R, G, B
-	parameter_rgb9:
-		db			0, 0, 0											; R, G, B
-	parameter_rgb10:
-		db			0, 0, 0											; R, G, B
+		db			gled_c_cmd_st, gled_cl_draw
 	command_end:
+		endscope
+
+; ==============================================================================
+;	gaming LED へのアクセス (page0)
+;	input)
+;		none
+;	output)
+;		none
+;	break)
+;		all
+;	comment)
+;		このルーチンは、page2 か page3 に置くこと
+; ==============================================================================
+		scope		gaming_led_send
+gaming_led_send::
+		ret
 		endscope
 
 ; ==============================================================================
 game_led_slot::
 		db			0					; GamingLEDカートリッジが存在するスロット番号。0x00 なら存在しない。
+game_led_state::
+		db			0					; 前半と後半に分けて送信する。そのどちらか。0 か 1
 game_led_send_function::
 		jp			game_led_send_for_z80
