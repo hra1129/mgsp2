@@ -1566,7 +1566,6 @@ option_p:
 		db			0
 
 		include	"MGSDRVCTL.ASM";
-		include	"GamingLED.asm"
 		include	"KEYINPUT.ASM";
 		include	"FILE_ACCESS.ASM"
 		include	"STRING.ASM"
@@ -1575,6 +1574,7 @@ option_p:
 		include	"KANJI.ASM"
 		include	"GRAPHIC.ASM"
 		include	"GRAPHIC_DATA.ASM"
+		include	"GamingLED.asm"
 
 ; ここから下は、初期化時のみ維持。GUI起動後は、曲名バッファとして上書きされる。
 		include	"GRAPHIC_INIT_DATA.ASM"

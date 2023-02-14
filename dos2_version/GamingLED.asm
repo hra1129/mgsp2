@@ -164,8 +164,8 @@ detect_gaming_led::
 		djnz		strcmp
 	match:
 		; 初期化のためのコマンド送信
-		ld			hl, command
 		ld			b, command_end - command
+		ld			hl, command
 		call		game_led_send_function
 
 		; 一致したので戻る
@@ -193,7 +193,7 @@ detect_gaming_led::
 		db			"MSXLED"
 	command:
 		; _LED_DEMOOFF
-		db			gled_c_cmd_st, gled_cl_off
+		db			gled_c_cmd_st, gled_cl_off, 0
 		; _LED_PT(4)
 		db			gled_c_cmd_st, gled_cl_pat, (4 << 1) | 1
 		; _LED_DRAW
@@ -290,31 +290,48 @@ gaming_led_1tick::
 		ret			z
 
 		; 着目しているトラック情報のアドレス
-		ld			hl, grp_track_volume
+		ld			a, [game_led_state]
+		or			a, a
+		jr			nz, state_1
 
-		; 音量情報を得る
-		ld			bc, 2
-		ld			de, parameter_rgb1
+		; 音量情報を更新
+	state_0:
+		ld			de, grp_track_volume
+		ld			hl, parameter_rgb1
+		ld			b, (0 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb2
+		ld			hl, parameter_rgb2
+		ld			b, (1 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb3
+		ld			hl, parameter_rgb3
+		ld			b, (2 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb4
+		ld			hl, parameter_rgb4
+		ld			b, (3 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb5
+		ld			hl, parameter_rgb5
+		ld			b, (4 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb6
+		jp			send_command
+	state_1:
+		ld			de, grp_track_volume + 2 * 5
+		ld			hl, parameter_rgb1
+		ld			b, (5 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb7
+		ld			hl, parameter_rgb2
+		ld			b, (6 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb8
+		ld			hl, parameter_rgb3
+		ld			b, (7 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb9
+		ld			hl, parameter_rgb4
+		ld			b, (8 << 1) | 1
 		call		update_volume
-		ld			de, parameter_rgb10
+		ld			hl, parameter_rgb5
+		ld			b, (9 << 1) | 1
 		call		update_volume
 
+	send_command:
 		; GamingLEDカートリッジに切り替える
 		ld			h, 0x40
 		call		enaslt
@@ -329,84 +346,60 @@ gaming_led_1tick::
 		ld			a, [ramad1]
 		call		enaslt
 		ei
+
+		; 状態を更新
+		ld			a, [game_led_state]
+		xor			a, 1
+		ld			[game_led_state], a
 		ret
 
 	update_volume:
+		ld			[hl], b
+		inc			hl
 		ld			b, 3
 	update_volume_loop:
-		ld			a, [hl]
+		ld			a, [de]
 		add			a, a				; 0～15 → 0～120
 		add			a, a
 		add			a, a
 		add			a, a				; コマンドは 2倍+1 を指定する
 		inc			a
-		ld			[de], a
-		inc			hl
-		inc			hl
+		ld			[hl], a
 		inc			de
+		inc			de
+		inc			hl
 		djnz		update_volume_loop
 		ret
 
 	command_start:
-	command_pos1:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (0 << 1) | 1		; POS 0
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb1:
+		db			(0 << 1) | 1									; POS 0
 		db			0, 0, 0											; R, G, B
-	command_draw1:
 		db			gled_c_cmd_st, gled_cl_draw
-	command_pos2:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (1 << 1) | 1		; POS 1
+		db			0												; wait
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb2:
+		db			(1 << 1) | 1									; POS 1
 		db			0, 0, 0											; R, G, B
-	command_draw2:
 		db			gled_c_cmd_st, gled_cl_draw
-	command_pos3:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (2 << 1) | 1		; POS 2
+		db			0												; wait
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb3:
+		db			(2 << 1) | 1									; POS 2
 		db			0, 0, 0											; R, G, B
-	command_draw3:
 		db			gled_c_cmd_st, gled_cl_draw
-	command_pos4:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (3 << 1) | 1		; POS 3
+		db			0												; wait
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb4:
+		db			(3 << 1) | 1									; POS 3
 		db			0, 0, 0											; R, G, B
-	command_draw4:
 		db			gled_c_cmd_st, gled_cl_draw
-	command_pos5:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (4 << 1) | 1		; POS 4
+		db			0												; wait
+		db			gled_c_cmd_st, gled_cl_p_rgb
 	parameter_rgb5:
+		db			(4 << 1) | 1									; POS 4
 		db			0, 0, 0											; R, G, B
-	command_draw5:
-		db			gled_c_cmd_st, gled_cl_draw
-	command_pos6:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (5 << 1) | 1		; POS 5
-	parameter_rgb6:
-		db			0, 0, 0											; R, G, B
-	command_draw6:
-		db			gled_c_cmd_st, gled_cl_draw
-	command_pos7:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (6 << 1) | 1		; POS 6
-	parameter_rgb7:
-		db			0, 0, 0											; R, G, B
-	command_draw7:
-		db			gled_c_cmd_st, gled_cl_draw
-	command_pos8:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (7 << 1) | 1		; POS 7
-	parameter_rgb8:
-		db			0, 0, 0											; R, G, B
-	command_draw8:
-		db			gled_c_cmd_st, gled_cl_draw
-	command_pos9:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (8 << 1) | 1		; POS 8
-	parameter_rgb9:
-		db			0, 0, 0											; R, G, B
-	command_draw9:
-		db			gled_c_cmd_st, gled_cl_draw
-	command_pos10:
-		db			gled_c_cmd_st, gled_cl_p_rgb, (9 << 1) | 1		; POS 9
-	parameter_rgb10:
-		db			0, 0, 0											; R, G, B
-	command_draw10:
 		db			gled_c_cmd_st, gled_cl_draw
 	command_end:
 		endscope
@@ -430,5 +423,7 @@ gaming_led_send::
 ; ==============================================================================
 game_led_slot::
 		db			0					; GamingLEDカートリッジが存在するスロット番号。0x00 なら存在しない。
+game_led_state::
+		db			0					; 前半と後半に分けて送信する。そのどちらか。0 か 1
 game_led_send_function::
 		jp			game_led_send_for_z80
