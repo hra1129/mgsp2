@@ -241,6 +241,8 @@ bottom		:=			0xFC48		; 2bytes, 実装したRAMの先頭番地。MSX2では通常 8000h
 himem		:=			0xFC4A		; 2bytes, 利用可能なメモリの上位番地。CLEAR文の<メモリ上限>により設定される
 trptbl		:=			0xFC4C		; 78bytes, 割り込み処理で使うトラップテーブル。一つのテーブルは 3bytes で 1バイト目が ON/OFF/STOPの状態。残りが分岐先テキストアドレス
 
+jiffy		:=			0xFC9E		; 1byte, 垂直同期割り込みカウンター
+
 scrmod		:=			0xFCAF		; 1byte, 現在のスクリーンモード番号
 oldscr		:=			0xFCB0		; 1byte, スクリーンモード保存エリア
 
