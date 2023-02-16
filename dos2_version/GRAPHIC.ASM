@@ -183,6 +183,14 @@ opll_is_not_found::
 scc_is_not_found::
 		ld		[vram_transfer_item_scc_logo_color], de
 
+		ld		a, [game_led_slot]
+		or		a, a
+		ld		de, mgsp_sound_source_logo_not_found_color
+		jr		z, gaming_led_is_not_found
+		ld		de, mgsp_gaming_led_logo_found_color
+gaming_led_is_not_found:
+		ld		[vram_transfer_item_gaming_led_logo_color], de
+
 		; スクロールバーを初期化
 		ld		hl, 0x2000 + (256 + 251) * 8
 		ld		bc, 11 * 8

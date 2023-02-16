@@ -209,6 +209,7 @@ grp_vram_transfer_table::
 	vram_transfer_item	4 * 8		, 1		, mgsp_logo_pattern						, 0x0000 + 85 * 8
 	vram_transfer_item	(3 * 5) * 8	, 1		, mgsp_function_key_pattern1			, 0x0000 + (256 + 256 + 224) * 8
 	vram_transfer_item	(3 * 5) * 8	, 1		, mgsp_function_key_pattern2			, 0x0000 + (256 + 256 + 241) * 8
+	vram_transfer_item	2 * 8		, 1		, mgsp_gaming_led_logo					, 0x0000 + 213 * 8
 	vram_transfer_item	4 * 8		, 1		, mgsp_sound_source_logo				, 0x0000 + 218 * 8
 	vram_transfer_item	7 * 8		, 2		, mgsp_keyboard_pattern1				, 0x0000 + 115 * 8
 	vram_transfer_item	7 * 8		, 2		, mgsp_keyboard_pattern2				, 0x0000 + 130 * 8
@@ -230,6 +231,8 @@ vram_transfer_item_opll_logo_color	:= code_address + 2
 	vram_transfer_item	1 * 8		, 1		, mgsp_sound_source_logo_found_color	, 0x2000 + 221 * 8
 vram_transfer_item_scc_logo_color	:= code_address + 2
 	vram_transfer_item	1 * 8		, 3		, mgsp_sound_source_logo_found_color	, 0x2000 + 218 * 8
+vram_transfer_item_gaming_led_logo_color	:= code_address + 2
+	vram_transfer_item	1 * 8		, 2		, mgsp_gaming_led_logo_found_color		, 0x2000 + 213 * 8
 	vram_transfer_item	8			, 15	, mgsp_keyboard_color					, 0x2000 + 130 * 8
 	vram_transfer_item	8			, 15	, mgsp_keyboard_color					, 0x2000 + 160 * 8
 	vram_transfer_item	8			, 32	, mgsp_separator_color					, 0x2000 + (256 + 0) * 8
@@ -351,6 +354,9 @@ mgsp_sound_source_logo::
 		db		0x08, 0x14, 0x14, 0x51, 0x14, 0x14, 0x08, 0x00
 		db		0x20, 0x50, 0x50, 0x44, 0x50, 0x50, 0x20, 0x00
 		db		0xF3, 0xF1, 0xF4, 0xF6, 0xC7, 0x87, 0x8F, 0xFF		; MSX-song
+mgsp_gaming_led_logo::
+		db		0x00, 0x43, 0x42, 0x43, 0x42, 0x42, 0x7B, 0x00		; LED
+		db		0x00, 0xDC, 0x12, 0x92, 0x12, 0x12, 0xDC, 0x00
 mgsp_separator_pattern::
 		db		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 mgsp_error_pattern::
@@ -384,6 +390,8 @@ mgsp_sound_source_logo_not_found_color::
 		db		0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40
 mgsp_sound_source_logo_found_color::
 		db		0xE0, 0xE0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xE0
+mgsp_gaming_led_logo_found_color::
+		db		0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0
 mgsp_separator_color::
 		db		0x51, 0x71, 0x71, 0x51, 0x51, 0x41, 0x41, 0x41
 mgsp_error_color::

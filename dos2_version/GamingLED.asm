@@ -232,19 +232,20 @@ gaming_led_1tick::
 		ret			z
 
 		; 音量情報を更新
-		ld			de, grp_track_volume
 		ld			c, (0 << 1) | 1
 		ld			hl, parameter_rgb1
-		call		update_volume		; LED1
-		call		update_volume		; LED2
-		call		update_volume		; LED3
-		call		update_volume		; LED4
-		call		update_volume		; LED5
-		call		update_volume		; LED6
-		call		update_volume		; LED7
-		call		update_volume		; LED8
-		call		update_volume		; LED9
-		call		update_volume		; LED10
+		ld			de, grp_track_volume
+		call		update_volume		; LED1  : ch1, 2, 3
+		call		update_volume		; LED2  : ch4, 5, 6
+		call		update_volume		; LED3  : ch7, 8, 9
+		call		update_volume		; LED4  : ch10, 11, 12
+		call		update_volume		; LED5  : ch13, 14, 15
+		call		update_volume		; LED6  : ch16, 17, dummy
+		ld			de, grp_track_volume
+		call		update_volume		; LED7  : ch1, 2, 3
+		call		update_volume		; LED8  : ch4, 5, 6
+		call		update_volume		; LED9  : ch7, 8, 9
+		call		update_volume		; LED10 : ch10, 11, 12
 
 	send_command:
 		; コマンドを送信する
@@ -258,8 +259,6 @@ gaming_led_1tick::
 		ret
 
 	update_volume:
-		ld			[hl], c
-		inc			hl
 		ld			b, 3
 	update_volume_loop:
 		ld			a, [de]
@@ -271,9 +270,6 @@ gaming_led_1tick::
 		inc			de
 		inc			hl
 		djnz		update_volume_loop
-		ld			a, c
-		add			a, 1 << 1			; next position
-		ld			c, a
 		ret
 
 	command:
