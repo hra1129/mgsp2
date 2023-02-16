@@ -58,7 +58,6 @@
 ;	2020/9/21	t.hara	1.0		1st release
 ; ==============================================================================
 
-; ※ATMEGA の関数テーブルのインデックスになっているため、未定義の値は指定不可
 gled_c_cmd_st			:= 0x43					;        CMDスタート識別子 (Serviceルーチン使用時は不要）
 gled_cl_debugen			:= ( 0 << 1) | 1		; 1byte : LED Debug UART On
 gled_cl_off				:= ( 1 << 1) | 1		; 1byte : LED OFF/DEMO STOP
