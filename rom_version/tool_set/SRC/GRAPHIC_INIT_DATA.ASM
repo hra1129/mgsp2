@@ -86,7 +86,7 @@ mgsp_keyboard_spot_attrib::			; スプライトアトリビュートテーブル
 mgsp_name::
 		ds		"MGSP"
 mgsp_version::
-		ds		" Version 2.1.6R"
+		ds		" Version 2.1.7R"
 		db		0
 mgsp_copyright::
 		ds		"Copyright (C)2021-2023 HRA!"
@@ -122,6 +122,7 @@ grp_vram_transfer_table::
 	vram_transfer_item	4 * 8		, 1		, mgsp_logo_pattern						, 0x0000 + 85 * 8
 	vram_transfer_item	(3 * 5) * 8	, 1		, mgsp_function_key_pattern1			, 0x0000 + (256 + 256 + 224) * 8
 	vram_transfer_item	(3 * 5) * 8	, 1		, mgsp_function_key_pattern2			, 0x0000 + (256 + 256 + 241) * 8
+	vram_transfer_item	2 * 8		, 1		, mgsp_gaming_led_logo					, 0x0000 + 213 * 8
 	vram_transfer_item	4 * 8		, 1		, mgsp_sound_source_logo				, 0x0000 + 218 * 8
 	vram_transfer_item	7 * 8		, 2		, mgsp_keyboard_pattern1				, 0x0000 + 115 * 8
 	vram_transfer_item	7 * 8		, 2		, mgsp_keyboard_pattern2				, 0x0000 + 130 * 8
@@ -141,6 +142,7 @@ grp_vram_transfer_table::
 	vram_transfer_item	8			, 32	, mgsp_function_key_color				, 0x2000 + (256 + 256 + 224) * 8
 	vram_transfer_item	1 * 8		, 1		, mgsp_sound_source_logo_found_color	, 0x2000 + 221 * 8
 	vram_transfer_item	1 * 8		, 3		, mgsp_sound_source_logo_found_color	, 0x2000 + 218 * 8
+	vram_transfer_item	1 * 8		, 2		, mgsp_gaming_led_logo_found_color		, 0x2000 + 213 * 8
 	vram_transfer_item	8			, 15	, mgsp_keyboard_color					, 0x2000 + 130 * 8
 	vram_transfer_item	8			, 15	, mgsp_keyboard_color					, 0x2000 + 160 * 8
 	vram_transfer_item	8			, 32	, mgsp_separator_color					, 0x2000 + (256 + 0) * 8

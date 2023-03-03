@@ -67,6 +67,10 @@ vdp_port1	:=	0x99
 ; ==============================================================================
 		scope	grp_init
 grp_init::
+		; GamingLED Çåüèo
+		call	detect_gaming_led
+		ei
+
 		; SCREEN 2
 		ld		a, 2
 		call	CHGMOD

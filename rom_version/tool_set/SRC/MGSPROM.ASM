@@ -304,8 +304,8 @@ not_found:
 		org			$ - 0x4000
 
 ; ==============================================================================
-;	page2 の DRAMスロットを検出して RAMAD1 にセットする
-;		このコードは、page2 で稼働する。
+;	page2 の DRAMスロットを検出して RAMAD2 にセットする
+;		このコードは、page1 で稼働する。
 ; ==============================================================================
 		scope		search_page2_dram_slot
 search_page2_dram_slot::
@@ -652,6 +652,7 @@ mgsdrv_h_timi_size	:= mgsdrv_h_timi_end - mgsdrv_h_timi_rel
 		include		"GRAPHIC_INIT_DATA.ASM"
 		include		"GRAPHIC_RO_DATA.ASM"
 		include		"KANJI.ASM"
+		include		"GamingLED.asm"
 
 ; ==============================================================================
 ; その他の初期化ルーチン
@@ -683,6 +684,7 @@ mgsdrv_address::
 		org			($ % 8192) + 0x4000
 mgsp_address::
 		include		"MGSP.ASM"
+		include		"GamingLED_cmd.asm"
 		align		8192
 
 ; ==============================================================================

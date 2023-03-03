@@ -86,6 +86,16 @@ scc_is_not_found::
 		ld		bc, 8 * 3
 		call	FILVRM
 scc_is_found:
+		; GamingLEDÇÃë∂ç›ämîF
+		ld		a, [game_led_slot]
+		or		a, a
+		jr		nz, gled_is_found
+gled_is_not_found::
+		ld		a, mgsp_sound_source_logo_not_found_color
+		ld		hl, 0x2000 + 213 * 8
+		ld		bc, 8 * 2
+		call	FILVRM
+gled_is_found:
 		ret
 		endscope
 
@@ -1093,6 +1103,9 @@ track_no_active:
 		add		iy, de
 		djnz	track_sw_loop
 		ld		a, h
+		push	af
+		call	gaming_led_1tick
+		pop		af
 		ret
 		endscope
 

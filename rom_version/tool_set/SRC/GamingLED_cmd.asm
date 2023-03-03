@@ -1,7 +1,7 @@
 ; ==============================================================================
-;	Graphic datas
+;	Gaming LED control routine
 ;
-;  Copyright (C) 2020 Takayuki Hara (HRA!)
+;  Copyright (C) 2023 Takayuki Hara (HRA!)
 ;  All rights reserved.
 ;                                              https://github.com/hra1129/mgsp2
 ;
@@ -55,103 +55,68 @@
 ;  POSSIBILITY OF SUCH DAMAGE.
 ; ------------------------------------------------------------------------------
 ;	Date		Author	Ver		Description
-;	2021/1/10	t.hara	1.0		1st release, separated from GRAPHIC.ASM
+;	2020/9/21	t.hara	1.0		1st release
 ; ==============================================================================
 
 ; ==============================================================================
-;	WORKAREA (Read only)
+;	gaming LED 1tick
+;	input)
+;		none
+;	output)
+;		none
+;	break)
+;		all
+;	comment)
+;		1/60秒に1回の処理を実行する
+;
+;		LED  0    1    2    3    4    5    6    7    8    9
+;		R   ch1  ch4  ch7  ch10 ch13 ch16 ch1  ch4  ch7  ch10
+;		G   ch2  ch5  ch8  ch11 ch14 ch17 ch2  ch5  ch8  ch11
+;		B   ch3  ch6  ch9  ch12 ch15 -    ch3  ch6  ch9  ch12
 ; ==============================================================================
-		;		 0         1         2         3         4         5         6
-		;		 0123456789012345678901234567890123456789012345678901234567890
-grp_help_line1::
-		ds		"<< Keyboard >>"
-		db		0
-grp_help_line2::
-		ds		"[↑]-[→],[SFT]+[↑][↓]:Sel.File. [1]-[9][Q]-[I]:T-Mute."
-		db		0
-grp_help_line3::
-		ds		"[A]-[F]:Sort/Shuffle. [^][\\]:LoopCount. [Z][X]:Back/Next."
-		db		0
-grp_help_line4::
-		ds		"[M]-[\]:Speed. [SPC][RET]:Play. [HOME]:Mode. [INS][DEL]:Vol."
-		db		0
-grp_help_line5::
-		ds		"[F2]:Stop. [F3]:Fade. [F4][BS]:UpDir. [F5]:Help. [ESC]:Exit."
-		db		0
-grp_help_line6::
-		ds		"[F6]:PlayMem."
-		db		0
-grp_help_line7::
-		ds		"<< Joypad >>"
-		db		0
-grp_help_line8::
-		ds		"[↑][↓],[A]+[↑][↓]:Sel.File. [←]:UpDir. [→]:Play."
-		db		0
-grp_help_line9::
-		ds		"[A]+[←][→]:Vol. [B]+[↑][↓]:LoopCount."
-		db		0
-grp_help_line10::
-		ds		"[B]+[←]:Stop. [B]+[→]:PlayMem. [A]+[B]+[↑]:Exit"
-		db		0
-grp_help_line11::
-		ds		"[A]+[B]+[→][←]:Sort"
-		db		0
+		scope		gaming_led_1tick
+gaming_led_1tick::
+		; GamingLEDカートリッジが存在しなければ何もせずに戻る
+		ld			a, [game_led_slot]
+		or			a, a
+		ret			z
 
-		;		 0         1         2         3         4         5         6
-		;		 0123456789012345678901234567890123456789012345678901234567890
-grp_license_line1::
-		ds		PRM_LICENSE_LINE1
-		db		0
-grp_license_line2::
-		ds		PRM_LICENSE_LINE2
-		db		0
-grp_license_line3::
-		ds		PRM_LICENSE_LINE3
-		db		0
-grp_license_line4::
-		ds		"MGSDRV version 3.20 Copyright(c) 1991-94 by Ain"
-		db		0
-grp_license_line5::
-		ds		"    Copyright(c) 1997-2001 GIGAMIX"
-		db		0
-grp_license_line6::
-		ds		"    https://gigamix.hatenablog.com/entry/mgsdrv/"
-		db		0
-grp_license_line7::
-		ds		"美咲フォント BDF 版 (Misaki Font BDF Version)"
-		db		0
-grp_license_line8::
-		ds		"    Copyright(C) 2002-2019 Num Kadoma"
-		db		0
-grp_license_line9::
-		ds		"    http://littlelimit.net/"
-		db		0
-grp_license_line10::
-		ds		"MGSP Version 2.1.7R Copyright(C) 2021-2023 HRA!"
-		db		0
-grp_license_line11::
-		ds		"    https://github.com/hra1129/mgsp2"
-		db		0
+		; 音量情報を更新
+		ld			c, (0 << 1) | 1
+		ld			hl, parameter_rgb1
+		ld			de, grp_track_volume
+		call		update_volume		; LED1  : ch1, 2, 3
+		call		update_volume		; LED2  : ch4, 5, 6
+		call		update_volume		; LED3  : ch7, 8, 9
+		call		update_volume		; LED4  : ch10, 11, 12
+		call		update_volume		; LED5  : ch13, 14, 15
+		call		update_volume		; LED6  : ch16, 17, dummy
+		ld			de, grp_track_volume
+		call		update_volume		; LED7  : ch1, 2, 3
+		call		update_volume		; LED8  : ch4, 5, 6
+		call		update_volume		; LED9  : ch7, 8, 9
+		call		update_volume		; LED10 : ch10, 11, 12
 
+	send_command:
+		; コマンドを送信する
+		ld			a, gled_cl_p_rgball
+		ld			b, 31
+		ld			hl, command
+		ld			ix, gled_send_command
+		ld			iy, [game_led_slot - 1]
+		jp			calslt
 
-mgsp_order_entry::			; 8bytes
-		ds		"Entry  "
-		db		0
-mgsp_order_title::			; 8bytes
-		ds		"Title  "
-		db		0
-mgsp_order_filename::		; 8bytes
-		ds		"F.Name "
-		db		0
-mgsp_order_shuffle::		; 8bytes
-		ds		"Shuffle"
-		db		0
-mgsp_normal_mode::			; 8bytes
-		ds		"Normal"
-		db		0, 0
-mgsp_random_mode::			; 8bytes
-		ds		"Random"
-		db		0, 0
-mgsp_repeat_mode::			; 8bytes
-		ds		"Repeat"
-		db		0, 0
+	update_volume:
+		ld			b, 3
+	update_volume_loop:
+		ld			a, [de]
+		add			a, a				; 0～15 → 0～120
+		add			a, a
+		add			a, a
+		ld			[hl], a
+		inc			de
+		inc			de
+		inc			hl
+		djnz		update_volume_loop
+		ret
+		endscope

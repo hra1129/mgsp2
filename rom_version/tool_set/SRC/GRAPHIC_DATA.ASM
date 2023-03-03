@@ -97,6 +97,7 @@ grp_track_volume:				; +0: current volume level, +1: track volume level
 		db		0, 0			; track F
 		db		0, 0			; track G
 		db		0, 0			; track H
+		db		0, 0			; dummy
 grp_yes_no:
 		db		0				; 0: Yes, 1: No
 
