@@ -1,3 +1,6 @@
+July.1.2023 7:00 v2.1.8R
+	(1) Fixed a bug that caused a runaway when playing back song data with a size of 8192 bytes.
+
 Mar.3.2023 21:40 v2.1.7R
 	(1) Added support the GamingLED cartridge.
 		https://github.com/v9938/MSX_GamingLED
