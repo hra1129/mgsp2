@@ -513,7 +513,12 @@ copy_mgs_data::
 		ld			bc, [file_size]
 		ld			a, b
 		cp			a, 0x20
-		jp			nc, over_2000h
+		jp			c, under_2000h
+		jp			nz, over_2000h
+		ld			a, c
+		or			a, a
+		jp			nz, over_2000h
+under_2000h:
 		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える
 		ld			a, [bank_num]
 		ld			[rom_bank0], a
