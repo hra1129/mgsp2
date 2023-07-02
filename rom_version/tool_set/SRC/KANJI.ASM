@@ -132,6 +132,7 @@ put_string::
 
 		ld		hl, kanji_work
 		xor		a, a				; Cy = 0
+		ld		[rom_ctrl], a		; MegaSCC RAM対応 - select lower/upper bank
 		ld		[rom_bank0], a		; HELP や 各種表示文字列は Bank#0 にあるので、Bank0 を Bank#0 に戻しておく
 loop:
 		push	hl
@@ -261,6 +262,7 @@ skip_pfs2:
 		rlca
 		rlca
 		and		a, 0b0000_0111
+		ld		[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		add		a, KANJI_BANK
 		ld		[rom_bank2], a
 		; バンク内アドレスを求める
@@ -289,6 +291,7 @@ skip_phs1:
 		add		hl, hl
 		add		hl, hl
 		ld		a, KANJI_BANK
+		ld		[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		ld		[rom_bank2], a
 		ld		a, 0x80
 		add		a, h
@@ -378,6 +381,7 @@ skip_pfs2:
 		rlca
 		and		a, 0b0000_0111
 		add		a, KANJI_BANK
+		ld		[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		ld		[rom_bank2], a
 		; バンク内アドレスを求める
 		pop		hl
@@ -438,6 +442,7 @@ skip_phs1:
 		add		hl, hl
 		add		hl, hl
 		ld		a, KANJI_BANK
+		ld		[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		ld		[rom_bank2], a
 		ld		a, 0x80
 		add		a, h

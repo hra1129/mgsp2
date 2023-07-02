@@ -201,6 +201,7 @@ page1_is_not_expanded:
 
 		; ROM Bank ‚ğ 0,1,0,1 ‚É‚·‚é (rom_bank0 ‚Í‚±‚ÌƒR[ƒh‚ª“®‚¢‚Ä‚é“_‚Å 0 ‚É‚È‚Á‚Ä‚¢‚é)
 		xor			a, a
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower bank
 		ld			[rom_bank2], a
 		inc			a
 		ld			[rom_bank1], a
@@ -409,6 +410,8 @@ transfer_to_ram_sub:
 		call		enaslt
 
 		; rom_bank3 ‚ğ MGSP_BANK ‚ÉØ‚è‘Ö‚¦‚é
+		xor			a, a
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower bank
 		ld			a, MGSP_BANK
 		ld			[rom_bank3], a
 
@@ -505,51 +508,85 @@ copy_mgs_data::
 		ld			h, 0x80
 		call		enaslt					; Š„‹Ö
 		; ƒAƒhƒŒƒXŒvZ
-		ld			hl, [offset_address]
-		ld			a, h
-		or			a, 0x40
-		ld			h, a
+		ld			bc, [offset_address]
+		ld			hl, [file_size]
+		add			hl, bc					; HL = offset_address + file_size
+		ld			c, l
+		ld			b, h
 		; ƒTƒCƒYŒvZ
-		ld			bc, [file_size]
 		ld			a, b
-		cp			a, 0x20
+		cp			a, 0x20					; 8192 ‚ğ‰z‚¦‚é = 1bank ‚Éû‚Ü‚Á‚Ä‚¢‚È‚¢
 		jp			c, under_2000h
 		jp			nz, over_2000h
 		ld			a, c
 		or			a, a
 		jp			nz, over_2000h
 under_2000h:
-		; bank0 (page1) ‚ğŠ–]‚Ìƒtƒ@ƒCƒ‹‚ª’u‚¢‚Ä‚ ‚éƒoƒ“ƒN‚ÉØ‚è‘Ö‚¦‚é
+		ld			hl, [offset_address]
+		ld			bc, [file_size]
+		; page1 ‚ÉoŒ»‚µ‚Ä‚¢‚é
+		ld			a, h
+		or			a, 0x40
+		ld			h, a
+		; bank0 (page1) ‚ğŠ–]‚Ìƒtƒ@ƒCƒ‹‚ª’u‚¢‚Ä‚ ‚éƒoƒ“ƒN‚ÉØ‚è‘Ö‚¦‚é (1ƒoƒ“ƒN–Ú)AƒTƒCƒY‚Í’†“r”¼’[B
 		ld			a, [bank_num]
+		ld			d, a
+		and			a, 0b0100_0000
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower/upper bank
+		ld			a, d
 		ld			[rom_bank0], a
-		inc			a
-		ld			[rom_bank1], a
 		; page1 --> page2 ƒuƒƒbƒN“]‘— (8192byte–¢–‚Ìê‡)
 		ld			de, 0x8000
 		ldir
 		jp			exit_copy_mgs_data
 over_2000h:
-		; bank0 (page1) ‚ğŠ–]‚Ìƒtƒ@ƒCƒ‹‚ª’u‚¢‚Ä‚ ‚éƒoƒ“ƒN‚ÉØ‚è‘Ö‚¦‚é
+		; “]‘—ƒTƒCƒY‚ğ‹‚ß‚é
+		;   []‚ğƒoƒ“ƒNA- ‚ğƒf[ƒ^‚Æ‚·‚é‚Æ
+		;   [      ----][----------][------    ]
+		;   ã‹L‚Ì‚æ‚¤‚É 3bank ‚É‚Ü‚½‚ª‚éƒP[ƒX‚ª‚ ‚é
+		;   - ‚Ì’·‚³‚ÍÅ‘å 16384byte ‚È‚Ì‚ÅA–³ğŒ‚É 16384byte “]‘—‚·‚éB
+		ld			de, [offset_address]
+		ld			hl, 8192				; 1ƒoƒ“ƒN‚ÌƒTƒCƒY
+		or			a, a
+		sbc			hl, de
+		ex			de, hl					; DE = Å‰‚Ìƒoƒ“ƒN‚Ì“]‘—ƒTƒCƒY, HL = offset_address
+		ld			c, e
+		ld			b, d					; BC = Å‰‚Ìƒoƒ“ƒN‚Ì“]‘—ƒTƒCƒY
+		; page1 ‚ÉoŒ»‚µ‚Ä‚¢‚é
+		ld			a, h
+		or			a, 0x40
+		ld			h, a
+		; bank0 (page1) ‚ğŠ–]‚Ìƒtƒ@ƒCƒ‹‚ª’u‚¢‚Ä‚ ‚éƒoƒ“ƒN‚ÉØ‚è‘Ö‚¦‚é (1ƒoƒ“ƒN–Ú)AƒTƒCƒY‚Í’†“r”¼’[B
 		ld			a, [bank_num]
+		ld			d, a
+		and			a, 0b0100_0000
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower/upper bank
+		ld			a, d
 		ld			[rom_bank0], a
 		inc			a
-		ld			[rom_bank1], a
-		; ‚Ü‚¸‘O”¼ 8192byte ‚ğ“]‘—
-		push		hl
-		ld			bc, 0x2000
+		; page1 --> page2 ƒuƒƒbƒN“]‘— (1ƒoƒ“ƒN–Ú)
 		ld			de, 0x8000
 		ldir
-		pop			hl
-		; ƒoƒ“ƒNØ‚è‘Ö‚¦
+		; bank0 (page1) ‚ğŠ–]‚Ìƒtƒ@ƒCƒ‹‚ª’u‚¢‚Ä‚ ‚éƒoƒ“ƒN‚ÉØ‚è‘Ö‚¦‚é (2ƒoƒ“ƒN–Ú)A8192‚É–‚½‚È‚¢‚©‚à‚µ‚ê‚È‚¢‚ª 8192“]‘—‚µ‚Ä‚µ‚Ü‚¤
+		push		af
+		and			a, 0b0100_0000
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower/upper bank
+		pop			af
 		ld			[rom_bank0], a
 		inc			a
-		ld			[rom_bank1], a
-		; c‚è‚ğ“]‘—
-		ld			bc, [file_size]
-		ld			a, b
-		sub			a, 0x20
-		ld			b, a
-		ld			de, 0xA000
+		; page1 --> page2 ƒuƒƒbƒN“]‘— (2ƒoƒ“ƒN–Ú)
+		ld			hl, 0x4000
+		ld			bc, 0x2000				; 8192bytes
+		ldir
+		; bank0 (page1) ‚ğŠ–]‚Ìƒtƒ@ƒCƒ‹‚ª’u‚¢‚Ä‚ ‚éƒoƒ“ƒN‚ÉØ‚è‘Ö‚¦‚é (3ƒoƒ“ƒN–Ú)
+		push		af
+		and			a, 0b0100_0000
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower/upper bank
+		pop			af
+		ld			[rom_bank0], a
+		; page1 --> page2 ƒuƒƒbƒN“]‘— (3ƒoƒ“ƒN–Ú: ˆÓ–¡‚Ì–³‚¢“]‘—‚É‚È‚éƒP[ƒX‚à‚ ‚é‚ª‹C‚É‚¹‚¸“]‘—‚·‚é)
+		ld			hl, 0x4000
+		ld			bc, [offset_address]
 		ldir
 exit_copy_mgs_data:
 		; page1 ‚ğ Œ³ƒXƒƒbƒg‚ÉØ‚è‘Ö‚¦‚é
@@ -590,6 +627,10 @@ enble_page2_bank::							; page2‚ğROMƒXƒƒbƒg‚ÉØ‚è‘Ö‚¦‚Äw’è‚Ìƒoƒ“ƒN‚ÉØ‚è‘Ö‚¦‚
 		ld			h, 0x80
 		call		enaslt					; Š„‹Ö
 		pop			af
+		ld			h, a
+		and			a, 0b0100_0000
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower/upper bank
+		ld			a, h
 		ld			[rom_bank2], a
 		inc			a
 		ld			[rom_bank3], a
