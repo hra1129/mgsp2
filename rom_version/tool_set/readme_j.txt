@@ -1,4 +1,4 @@
-MGSP version 2.1.6 ROM版	Copyright (C) 2021-2023 HRA!
+MGSP version 2.1.10 ROM版	Copyright (C) 2021-2023 HRA!
 
 1. はじめに
 	MegaROMカートリッジ用のソフト作成の練習として作りました。

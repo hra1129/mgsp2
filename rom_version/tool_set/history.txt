@@ -1,3 +1,8 @@
+July.4.2023 6:40 v2.1.10R
+	(1) Fixed a bug in the SCC version where if the title portion of the song data 
+		existed in Bank#3F, the song title display would be garbled and SCC would not produce sound.
+
+--------------------------------------------------------------------------------
 July.3.2023 6:40 v2.1.9R
 	(1) SCC version builds support 8Mbit MegaSCC RAM.
 		https://github.com/v9938/MSX_MEGASCC-RAM8Mbit

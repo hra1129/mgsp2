@@ -120,10 +120,12 @@ get_mgs_song_title::
 		inc			hl
 		ld			b, [hl]				; オフセットアドレス上位
 		push		bc
+		ld			[bank_num], a		; バックアップ
+		dec			a					; Bank2 は Bank#0x3F を読めないので、Bank3 を使う
 		call		enble_page2_bank
 		; 曲名データを転送する
-		pop			hl					; HL = オフセットアドレス + 0x8008
-		ld			bc, 0x8008
+		pop			hl					; HL = オフセットアドレス + 0xA008
+		ld			bc, 0xA008
 		add			hl, bc
 
 		pop			bc					; BC = length
@@ -136,6 +138,18 @@ loop:
 		ld			[de], a
 		inc			de
 		inc			hl
+		ld			a, h				; バンク境界に到達したか？
+		cp			a, 0xC0
+		jr			nz, skip_change_bank
+		; バンク境界に達した場合、bank3 を次のバンクへ切り替える
+		push		de
+		push		bc
+		ld			a, [bank_num]
+		call		enble_page2_bank
+		pop			bc
+		pop			de
+		ld			hl, 0xA000			; バンクの先頭へ移動
+skip_change_bank:
 		djnz		loop
 		jr			skip
 
@@ -165,6 +179,8 @@ skip:
 		pop			hl
 		ld			a, l
 		ret
+bank_num:
+		db			0
 		endscope
 
 ; ==============================================================================

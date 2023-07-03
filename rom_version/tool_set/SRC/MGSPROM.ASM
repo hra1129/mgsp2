@@ -410,9 +410,8 @@ transfer_to_ram_sub:
 		call		enaslt
 
 		; rom_bank3 ‚ğ MGSP_BANK ‚ÉØ‚è‘Ö‚¦‚é
-		xor			a, a
-		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower bank
 		ld			a, MGSP_BANK
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower bank
 		ld			[rom_bank3], a
 
 		; page1 ‚ğ RAM ‚ÉØ‚è‘Ö‚¦‚é
@@ -633,6 +632,10 @@ enble_page2_bank::							; page2‚ğROMƒXƒƒbƒg‚ÉØ‚è‘Ö‚¦‚Äw’è‚Ìƒoƒ“ƒN‚ÉØ‚è‘Ö‚¦‚
 		ld			a, h
 		ld			[rom_bank2], a
 		inc			a
+		ld			h, a
+		and			a, 0b0100_0000
+		ld			[rom_ctrl], a			; MegaSCC RAM‘Î‰ - select lower/upper bank (bank2 ‚àˆê‚ÉØ‚è‘Ö‚í‚é‚ªAˆÙ‚È‚é upper/lower ‚¾‚Á‚½ê‡Abank3 ‚ª—Dæ)
+		ld			a, h
 		ld			[rom_bank3], a
 		inc			a
 		; page1 ‚ğ Œ³ƒXƒƒbƒg‚ÉØ‚è‘Ö‚¦‚é

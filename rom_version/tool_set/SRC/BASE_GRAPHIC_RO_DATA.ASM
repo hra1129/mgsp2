@@ -127,7 +127,7 @@ grp_license_line9::
 		ds		"    http://littlelimit.net/"
 		db		0
 grp_license_line10::
-		ds		"MGSP Version 2.1.7R Copyright(C) 2021-2023 HRA!"
+		ds		"MGSP Version 2.1.10R Copyright(C) 2021-2023 HRA!"
 		db		0
 grp_license_line11::
 		ds		"    https://github.com/hra1129/mgsp2"
