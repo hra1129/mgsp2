@@ -1,3 +1,7 @@
+July.6.2023 7:10 v2.1.11R
+	(1) ESE-SCC Maximum was supported.
+
+--------------------------------------------------------------------------------
 July.4.2023 6:40 v2.1.10R
 	(1) Fixed a bug in the SCC version where if the title portion of the song data 
 		existed in Bank#3F, the song title display would be garbled and SCC would not produce sound.

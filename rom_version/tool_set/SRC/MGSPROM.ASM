@@ -498,12 +498,12 @@ copy_mgs_data::
 		inc			hl
 		ld			d, [hl]					; +12, +13 : DE=ファイルサイズ
 		ld			[file_size], de
-		; page1 を ROMスロットに切り替える
+		; page1 を ROMスロットに切り替える (バンクレジスタ)
 		ld			a, [my_slot_no]
 		ld			h, 0x40
 		call		enaslt					; 割禁
-		; page2 を RAMスロットに切り替える
-		ld			a, [ramad2]
+		; page2 を ROMスロットに切り替える
+		ld			a, [my_slot_no]
 		ld			h, 0x80
 		call		enaslt					; 割禁
 		; アドレス計算
@@ -521,29 +521,59 @@ copy_mgs_data::
 		or			a, a
 		jp			nz, over_2000h
 under_2000h:
-		ld			hl, [offset_address]
-		ld			bc, [file_size]
-		; page1 に出現している
-		ld			a, h
-		or			a, 0x40
-		ld			h, a
-		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える (1バンク目)、サイズは中途半端。
+		; bank3 (page2) を所望のファイルが置いてあるバンクに切り替える (1バンク目)、サイズは中途半端。
 		ld			a, [bank_num]
 		ld			d, a
 		and			a, 0b0100_0000
 		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		ld			a, d
-		ld			[rom_bank0], a
+		ld			[rom_bank3], a
+		; page2 の bank3 から page3 の mgs_transfer_buffer へ転送
+		ld			hl, 0xA000
+		ld			de, mgs_transfer_buffer
+		ld			bc, 0x2000
+		ldir
+		; page2 を RAMスロットに切り替える
+		ld			a, [ramad2]
+		ld			h, 0x80
+		call		enaslt					; 割禁
 		; page1 --> page2 ブロック転送 (8192byte未満の場合)
+		ld			hl, [offset_address]
+		ld			a, h
+		add			a, mgs_transfer_buffer >> 8
+		ld			h, a
+		ld			bc, [file_size]
 		ld			de, 0x8000
 		ldir
 		jp			exit_copy_mgs_data
 over_2000h:
-		; 転送サイズを求める
+		; 転送サイズを求める。ここに到達した時点で page2 は ROMスロット になっている。
 		;   []をバンク、- をデータとすると
+		;     1st bank    2nd bank    3rd bank
 		;   [      ----][----------][------    ]
 		;   上記のように 3bank にまたがるケースがある
 		;   - の長さは最大 16384byte なので、無条件に 16384byte 転送する。
+
+		; << 1st bank >> ------------------------------------------------------
+		; bank3 (page2) を所望のファイルが置いてあるバンクに切り替える、サイズは中途半端。
+		ld			a, [bank_num]
+		ld			d, a
+		and			a, 0b0100_0000
+		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
+		ld			a, d
+		ld			[rom_bank3], a
+		inc			a
+		push		af						; バンク番号を保存
+		; page2 --> page3 の mgs_transfer_buffer へブロック転送。これは bank の内容を丸ごとコピー
+		ld			bc, 0x2000				; 8192bytes
+		ld			de, mgs_transfer_buffer
+		ld			hl, 0xA000				; page2-bank3 (A000h-BFFFh)
+		ldir
+		; page2 を RAMスロットに切り替える
+		ld			a, [ramad2]
+		ld			h, 0x80
+		call		enaslt					; 割禁
+		; 転送サイズを求める
 		ld			de, [offset_address]
 		ld			hl, 8192				; 1バンクのサイズ
 		or			a, a
@@ -551,41 +581,74 @@ over_2000h:
 		ex			de, hl					; DE = 最初のバンクの転送サイズ, HL = offset_address
 		ld			c, e
 		ld			b, d					; BC = 最初のバンクの転送サイズ
-		; page1 に出現している
+		; page3 の mgs_transfer_buffer から、page2 の RAM へ転送
 		ld			a, h
-		or			a, 0x40
+		add			a, mgs_transfer_buffer >> 8
 		ld			h, a
-		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える (1バンク目)、サイズは中途半端。
-		ld			a, [bank_num]
-		ld			d, a
-		and			a, 0b0100_0000
-		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
-		ld			a, d
-		ld			[rom_bank0], a
-		inc			a
-		; page1 --> page2 ブロック転送 (1バンク目)
 		ld			de, 0x8000
 		ldir
-		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える (2バンク目)、8192に満たないかもしれないが 8192転送してしまう
-		push		af
+		push		de						; 中途半端サイズなので、曲データや曲データの位置によって 0x8001～0xBFFF のいずれも得る
+		; << 2nd bank >> ------------------------------------------------------
+		; page2 を ROMスロットに切り替える
+		ld			a, [my_slot_no]
+		ld			h, 0x80
+		call		enaslt					; 割禁
+		; bank3 (page2) を所望のファイルが置いてあるバンクに切り替える。8192に満たないかもしれないが 8192転送してしまう
+		pop			de						; 転送先アドレスの復帰
+		pop			af						; バンク番号の復帰
+		push		af						; 制御レジスタ設定のために壊してしまうので、バンク番号を保存
 		and			a, 0b0100_0000
 		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
-		pop			af
-		ld			[rom_bank0], a
+		pop			af						; バンク番号の復帰
+		ld			[rom_bank3], a
 		inc			a
-		; page1 --> page2 ブロック転送 (2バンク目)
-		ld			hl, 0x4000
+		push		af						; バンク番号を保存
+		; page2 --> page3 の mgs_transfer_buffer へブロック転送
+		push		de						; 転送先アドレスの保存
+		ld			hl, 0xA000
 		ld			bc, 0x2000				; 8192bytes
+		ld			de, mgs_transfer_buffer
 		ldir
-		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える (3バンク目)
-		push		af
+		; page2 を RAMスロットに切り替える
+		ld			a, [ramad2]
+		ld			h, 0x80
+		call		enaslt					; 割禁
+		; page3 の mgs_transfer_buffer から、page2 の RAM へ転送
+		ld			hl, mgs_transfer_buffer
+		ld			bc, 0x2000				; 8192bytes
+		pop			de						; 転送先アドレスの復帰
+		ldir
+		push		de						; 転送アドレスを保存
+		; << 3rd bank >> ------------------------------------------------------
+		; page2 を ROMスロットに切り替える
+		ld			a, [my_slot_no]
+		ld			h, 0x80
+		call		enaslt					; 割禁
+		; bank3 (page2) を所望のファイルが置いてあるバンクに切り替える。
+		pop			de						; 転送先アドレスの復帰
+		pop			af						; バンク番号の復帰
+		push		af						; 制御レジスタ設定のために壊してしまうので、バンク番号を保存
 		and			a, 0b0100_0000
 		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
-		pop			af
-		ld			[rom_bank0], a
-		; page1 --> page2 ブロック転送 (3バンク目: 意味の無い転送になるケースもあるが気にせず転送する)
-		ld			hl, 0x4000
-		ld			bc, [offset_address]
+		pop			af						; バンク番号の復帰
+		ld			[rom_bank3], a
+		; page2 --> page3 の mgs_transfer_buffer へブロック転送
+		push		de						; 転送先アドレスの保存
+		ld			hl, 0xA000				; bank3
+		ld			bc, [offset_address]	; 残りの端数サイズ
+		ld			a, c
+		or			a, b
+		jr			z, exit_copy_mgs_data	; 残りの端数が 0 だった場合、ldir しない
+		ld			de, mgs_transfer_buffer
+		ldir
+		; page2 を RAMスロットに切り替える
+		ld			a, [ramad2]
+		ld			h, 0x80
+		call		enaslt					; 割禁
+		; page3 の mgs_transfer_buffer から、page2 の RAM へ転送
+		ld			hl, mgs_transfer_buffer
+		ld			bc, [offset_address]	; 残りの端数サイズ
+		pop			de						; 転送先アドレスの復帰
 		ldir
 exit_copy_mgs_data:
 		; page1 を 元スロットに切り替える
@@ -687,7 +750,7 @@ mgsdrv_h_timi_end::
 
 mgsdrv_h_timi_size	:= mgsdrv_h_timi_end - mgsdrv_h_timi_rel
 
-		if mgsdrv_h_timi_size >= 0x400
+		if mgsdrv_h_timi_size >= 0x200
 			error "MGSDRV_H_TIMI is too big!"
 		endif
 
