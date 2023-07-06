@@ -15,4 +15,3 @@ kanji_work			:= kanji_driver + kanji_driver_size		; 248bytes : 漢字描画用ワーク
 kanji_work_end		:= kanji_work + 248
 
 grp_decompress_area	:= 0xD000								; 768bytes : 起動時のパターンネームテーブル展開用
-mgs_transfer_buffer	:= grp_decompress_area					; 8192bytes: MGSファイル転送用の一時バッファ。 ※下位8bit は 0 でなければならない

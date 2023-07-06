@@ -66,8 +66,7 @@ fl_max_entries	:= 192
 		scope		file_init
 file_init::
 		; page2 を ROM, fl_entry_table_init のバンク に変える
-		ld			a, fl_entry_table_init_bank
-		call		enble_page2_bank
+		call		enble_fl_entry_table_init_bank
 		; ブロック転送
 		ld			hl, fl_entry_table_init_offset + 0x8000
 		ld			de, fl_entry_table
@@ -94,93 +93,6 @@ fl_update_entries::
 		dec			a
 		jp			z, fl_sort_filename
 		jp			fl_sort_shuffle
-		endscope
-
-; ==============================================================================
-;	メモリを確保して指定のファイルの曲名を取得する
-;	input)
-;		hl ... entry table
-;		de ... destination address
-;		b .... length
-;	output)
-;		a .... string length
-;	break)
-;		all
-; ==============================================================================
-		scope		get_mgs_song_title
-get_mgs_song_title::
-		push		de
-		push		bc
-		; page2 を ROMスロットに切り替えて、曲データのバンクに切り替える
-		ld			de, FENT_MGS_BANK_ADDRESS
-		add			hl, de
-		ld			a, [hl]				; BANK番号
-		inc			hl
-		ld			c, [hl]				; オフセットアドレス下位
-		inc			hl
-		ld			b, [hl]				; オフセットアドレス上位
-		push		bc
-		ld			[bank_num], a		; バックアップ
-		dec			a					; Bank2 は Bank#0x3F を読めないので、Bank3 を使う
-		call		enble_page2_bank
-		; 曲名データを転送する
-		pop			hl					; HL = オフセットアドレス + 0xA008
-		ld			bc, 0xA008
-		add			hl, bc
-
-		pop			bc					; BC = length
-		pop			de					; DE = destination address
-		push		de
-loop:
-		ld			a, [hl]
-		cp			a, ' '
-		jr			c, fill_space
-		ld			[de], a
-		inc			de
-		inc			hl
-		ld			a, h				; バンク境界に到達したか？
-		cp			a, 0xC0
-		jr			nz, skip_change_bank
-		; バンク境界に達した場合、bank3 を次のバンクへ切り替える
-		push		de
-		push		bc
-		ld			a, [bank_num]
-		call		enble_page2_bank
-		pop			bc
-		pop			de
-		ld			hl, 0xA000			; バンクの先頭へ移動
-skip_change_bank:
-		djnz		loop
-		jr			skip
-
-fill_space:
-		push		de
-		ld			a, ' '
-fill_space_loop:
-		ld			[de], a
-		inc			de
-		djnz		fill_space_loop
-		pop			de
-
-skip:
-		pop			hl
-		ex			de, hl
-		xor			a, a
-		sbc			hl, de
-		push		hl
-
-		ld			a, 0x3F
-		ld			[scc_bank2], a		; Konami8K SCC の場合、SCCレジスタを出現させておく。ASCII8K の場合、意味も無く ROM に 3Fh 書き込む。
-		; page2 を RAMスロットに戻す
-		ld			a, [page2_slot]
-		ld			h, 0x80
-		call		enaslt
-		ei
-		pop			hl
-		ld			a, l
-		ret
-bank_num:
-		db			0
 		endscope
 
 ; ==============================================================================

@@ -502,8 +502,10 @@ copy_mgs_data::
 		ld			a, [my_slot_no]
 		ld			h, 0x40
 		call		enaslt					; 割禁
-		; page2 を ROMスロットに切り替える
-		ld			a, [my_slot_no]
+		xor			a, a
+		ld			[rom_ctrl], a			; 似非SCC RAM対応 - enable bank registers
+		; page2 を RAMスロットに切り替える
+		ld			a, [ramad2]
 		ld			h, 0x80
 		call		enaslt					; 割禁
 		; アドレス計算
@@ -521,30 +523,24 @@ copy_mgs_data::
 		or			a, a
 		jp			nz, over_2000h
 under_2000h:
-		; bank3 (page2) を所望のファイルが置いてあるバンクに切り替える (1バンク目)、サイズは中途半端。
+		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える (1バンク目)、サイズは中途半端。
 		ld			a, [bank_num]
+		ld			[rom_bank0], a
 		ld			d, a
-		and			a, 0b0100_0000
+		and			a, 0b0100_0000			; bit6
+		or			a, 0b0001_0000			; bit4
 		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		ld			a, d
-		ld			[rom_bank3], a
-		; page2 の bank3 から page3 の mgs_transfer_buffer へ転送
-		ld			hl, 0xA000
-		ld			de, mgs_transfer_buffer
-		ld			bc, 0x2000
-		ldir
-		; page2 を RAMスロットに切り替える
-		ld			a, [ramad2]
-		ld			h, 0x80
-		call		enaslt					; 割禁
 		; page1 --> page2 ブロック転送 (8192byte未満の場合)
 		ld			hl, [offset_address]
 		ld			a, h
-		add			a, mgs_transfer_buffer >> 8
+		add			a, 0x40
 		ld			h, a
 		ld			bc, [file_size]
 		ld			de, 0x8000
 		ldir
+		xor			a, a
+		ld			[rom_ctrl], a			; 似非SCC RAM対応 - enable bank registers
 		jp			exit_copy_mgs_data
 over_2000h:
 		; 転送サイズを求める。ここに到達した時点で page2 は ROMスロット になっている。
@@ -555,101 +551,63 @@ over_2000h:
 		;   - の長さは最大 16384byte なので、無条件に 16384byte 転送する。
 
 		; << 1st bank >> ------------------------------------------------------
-		; bank3 (page2) を所望のファイルが置いてあるバンクに切り替える、サイズは中途半端。
+		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える、サイズは中途半端。
 		ld			a, [bank_num]
+		ld			[rom_bank0], a
 		ld			d, a
-		and			a, 0b0100_0000
+		and			a, 0b0100_0000			; bit6
+		or			a, 0b0001_0000			; bit4, Cy = 0
 		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		ld			a, d
-		ld			[rom_bank3], a
 		inc			a
 		push		af						; バンク番号を保存
-		; page2 --> page3 の mgs_transfer_buffer へブロック転送。これは bank の内容を丸ごとコピー
-		ld			bc, 0x2000				; 8192bytes
-		ld			de, mgs_transfer_buffer
-		ld			hl, 0xA000				; page2-bank3 (A000h-BFFFh)
-		ldir
-		; page2 を RAMスロットに切り替える
-		ld			a, [ramad2]
-		ld			h, 0x80
-		call		enaslt					; 割禁
 		; 転送サイズを求める
 		ld			de, [offset_address]
 		ld			hl, 8192				; 1バンクのサイズ
-		or			a, a
-		sbc			hl, de
+		sbc			hl, de					; HL = 8192 - [offset_address]
 		ex			de, hl					; DE = 最初のバンクの転送サイズ, HL = offset_address
 		ld			c, e
 		ld			b, d					; BC = 最初のバンクの転送サイズ
-		; page3 の mgs_transfer_buffer から、page2 の RAM へ転送
+		; page1 の bank0 から、page2 の RAM へ転送
 		ld			a, h
-		add			a, mgs_transfer_buffer >> 8
+		add			a, 0x40
 		ld			h, a
 		ld			de, 0x8000
 		ldir
-		push		de						; 中途半端サイズなので、曲データや曲データの位置によって 0x8001～0xBFFF のいずれも得る
+		xor			a, a
+		ld			[rom_ctrl], a			; 似非SCC RAM対応 - enable bank registers
 		; << 2nd bank >> ------------------------------------------------------
-		; page2 を ROMスロットに切り替える
-		ld			a, [my_slot_no]
-		ld			h, 0x80
-		call		enaslt					; 割禁
-		; bank3 (page2) を所望のファイルが置いてあるバンクに切り替える。8192に満たないかもしれないが 8192転送してしまう
-		pop			de						; 転送先アドレスの復帰
+		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える。8192に満たないかもしれないが 8192転送してしまう
 		pop			af						; バンク番号の復帰
 		push		af						; 制御レジスタ設定のために壊してしまうので、バンク番号を保存
-		and			a, 0b0100_0000
+		ld			[rom_bank0], a
+		and			a, 0b0100_0000			; bit6
+		or			a, 0b0001_0000			; bit4
 		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		pop			af						; バンク番号の復帰
-		ld			[rom_bank3], a
 		inc			a
 		push		af						; バンク番号を保存
-		; page2 --> page3 の mgs_transfer_buffer へブロック転送
-		push		de						; 転送先アドレスの保存
-		ld			hl, 0xA000
+		; page1 の bank0 から、page2 の RAM へ転送
+		ld			hl, 0x4000
 		ld			bc, 0x2000				; 8192bytes
-		ld			de, mgs_transfer_buffer
 		ldir
-		; page2 を RAMスロットに切り替える
-		ld			a, [ramad2]
-		ld			h, 0x80
-		call		enaslt					; 割禁
-		; page3 の mgs_transfer_buffer から、page2 の RAM へ転送
-		ld			hl, mgs_transfer_buffer
-		ld			bc, 0x2000				; 8192bytes
-		pop			de						; 転送先アドレスの復帰
-		ldir
-		push		de						; 転送アドレスを保存
+		xor			a, a
+		ld			[rom_ctrl], a			; 似非SCC RAM対応 - enable bank registers
 		; << 3rd bank >> ------------------------------------------------------
-		; page2 を ROMスロットに切り替える
-		ld			a, [my_slot_no]
-		ld			h, 0x80
-		call		enaslt					; 割禁
-		; bank3 (page2) を所望のファイルが置いてあるバンクに切り替える。
-		pop			de						; 転送先アドレスの復帰
+		; bank0 (page1) を所望のファイルが置いてあるバンクに切り替える。
 		pop			af						; バンク番号の復帰
 		push		af						; 制御レジスタ設定のために壊してしまうので、バンク番号を保存
-		and			a, 0b0100_0000
+		ld			[rom_bank0], a
+		and			a, 0b0100_0000			; bit6
+		or			a, 0b0001_0000			; bit4
 		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
 		pop			af						; バンク番号の復帰
-		ld			[rom_bank3], a
-		; page2 --> page3 の mgs_transfer_buffer へブロック転送
-		push		de						; 転送先アドレスの保存
-		ld			hl, 0xA000				; bank3
+		; page1 の bank0 から、page2 の RAM へ転送
+		ld			hl, 0x4000
 		ld			bc, [offset_address]	; 残りの端数サイズ
-		ld			a, c
-		or			a, b
-		jr			z, exit_copy_mgs_data	; 残りの端数が 0 だった場合、ldir しない
-		ld			de, mgs_transfer_buffer
 		ldir
-		; page2 を RAMスロットに切り替える
-		ld			a, [ramad2]
-		ld			h, 0x80
-		call		enaslt					; 割禁
-		; page3 の mgs_transfer_buffer から、page2 の RAM へ転送
-		ld			hl, mgs_transfer_buffer
-		ld			bc, [offset_address]	; 残りの端数サイズ
-		pop			de						; 転送先アドレスの復帰
-		ldir
+		xor			a, a
+		ld			[rom_ctrl], a			; 似非SCC RAM対応 - enable bank registers
 exit_copy_mgs_data:
 		; page1 を 元スロットに切り替える
 		ld			a, [page1_slot]
@@ -669,38 +627,136 @@ file_size:
 		endscope
 
 ; ==============================================================================
-;	enble_page2_bank
-;		page2 を ROMスロット に切り替えて、page2 の ROM を指定のバンクに切り替える
+;	メモリを確保して指定のファイルの曲名を取得する
+;	input)
+;		hl ... entry table
+;		de ... destination address
+;		b .... length
+;	output)
+;		a .... string length
+;	break)
+;		all
+; ==============================================================================
+		scope		get_mgs_song_title
+get_mgs_song_title::
+		push		de
+		push		bc
+		; RAM上に転送済みの FL_ENTRY_TABLE から、曲データのバンクとオフセットアドレスを取得する
+		ld			de, FENT_MGS_BANK_ADDRESS
+		add			hl, de
+		ld			a, [hl]				; BANK番号
+		inc			hl
+		ld			c, [hl]				; オフセットアドレス下位
+		inc			hl
+		ld			b, [hl]				; オフセットアドレス上位
+		push		bc
+		ld			[bank_num], a		; バックアップ
+		; page1 を ROMスロットに切り替える (バンクレジスタ)
+		ld			a, [my_slot_no]
+		ld			h, 0x40
+		call		enaslt				; 割禁
+		; page1 の bank0 を曲データのバンクに切り替える
+		xor			a, a
+		ld			[rom_ctrl], a		; 似非SCC RAM対応 - enable bank registers
+		ld			a, [bank_num]
+		ld			[rom_bank0], a		; bank0 のバンクを切り替え
+		and			a, 0b0100_0000		; bit6
+		or			a, 0b0001_0000		; bit4
+		ld			[rom_ctrl], a		; 似非SCC RAM対応
+		; 曲名データを転送する
+		pop			hl					; HL = オフセットアドレス + 0x4008
+		ld			bc, 0x4008
+		add			hl, bc
+
+		pop			bc					; BC = length
+		pop			de					; DE = destination address
+		push		de
+loop:
+		ld			a, [hl]
+		cp			a, ' '
+		jr			c, fill_space
+		ld			[de], a
+		inc			de
+		inc			hl
+		ld			a, h				; バンク境界に到達したか？
+		cp			a, 0xC0
+		jr			nz, skip_change_bank
+		; バンク境界に達した場合、bank0 を次のバンクへ切り替える
+		push		de
+		push		bc
+		xor			a, a
+		ld			[rom_ctrl], a		; 似非SCC RAM対応 - enable bank registers
+		ld			a, [bank_num]
+		inc			a
+		ld			[bank_num], a
+		ld			[rom_bank0], a
+		and			a, 0b0100_0000		; bit6
+		or			a, 0b0001_0000		; bit4
+		ld			[rom_ctrl], a		; 似非SCC RAM対応
+		pop			bc
+		pop			de
+		ld			hl, 0x4000			; バンクの先頭へ移動
+skip_change_bank:
+		djnz		loop
+		jr			skip
+
+fill_space:
+		push		de
+		ld			a, ' '
+fill_space_loop:
+		ld			[de], a
+		inc			de
+		djnz		fill_space_loop
+		pop			de
+
+skip:
+		pop			hl
+		ex			de, hl
+		xor			a, a
+		sbc			hl, de
+		push		hl
+
+		xor			a, a
+		ld			[rom_ctrl], a		; 似非SCC RAM対応
+		ld			a, 0x3F
+		ld			[scc_bank2], a		; Konami8K SCC の場合、SCCレジスタを出現させておく。ASCII8K の場合、意味も無く ROM に 3Fh 書き込む。
+		; page1 を 元スロットに切り替える
+		ld			a, [page1_slot]
+		ld			h, 0x40
+		call		enaslt				; 割禁
+		ei
+		pop			hl
+		ld			a, l
+		ret
+bank_num:
+		db			0
+		endscope
+
+; ==============================================================================
+;	enble_fl_entry_table_init_bank
+;		page2 を ROMスロット に切り替えて、page2 の ROM を fl_entry_table_init_bank のバンクに切り替える
 ;	input)
 ;		A ........ bank2 のバンク番号
 ;	comment)
 ;		bank2 は A, bank3 は A+1 のバンクに切り替わって page2 に現れる。
 ;		割禁のまま戻る
 ; ==============================================================================
-		scope		enble_page2_bank
-enble_page2_bank::							; page2をROMスロットに切り替えて指定のバンクに切り替える
-		push		af						; DI のまま戻る
+		scope		enble_fl_entry_table_init_bank
+enble_fl_entry_table_init_bank::			; page2をROMスロットに切り替えて指定のバンクに切り替える
 		; page1 を ROMスロットに切り替える
 		ld			a, [my_slot_no]
 		ld			h, 0x40
 		call		enaslt					; 割禁
+		xor			a, a
+		ld			[rom_ctrl], a			; 似非SCC RAM対応 - bank register enable
 		; page2 を ROMスロットに切り替える
 		ld			a, [my_slot_no]
 		ld			h, 0x80
 		call		enaslt					; 割禁
-		pop			af
-		ld			h, a
-		and			a, 0b0100_0000
-		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank
-		ld			a, h
+		ld			a, fl_entry_table_init_bank
 		ld			[rom_bank2], a
 		inc			a
-		ld			h, a
-		and			a, 0b0100_0000
-		ld			[rom_ctrl], a			; MegaSCC RAM対応 - select lower/upper bank (bank2 も一緒に切り替わるが、異なる upper/lower だった場合、bank3 が優先)
-		ld			a, h
 		ld			[rom_bank3], a
-		inc			a
 		; page1 を 元スロットに切り替える
 		ld			a, [page1_slot]
 		ld			h, 0x40

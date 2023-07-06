@@ -1,3 +1,7 @@
+July.7.2023 6:55 v2.1.12R
+	(1) Bug fix. ESE-SCC Maximum was supported.
+
+--------------------------------------------------------------------------------
 July.6.2023 7:10 v2.1.11R
 	(1) ESE-SCC Maximum was supported.
 
