@@ -1,3 +1,7 @@
+July.7.2023 21:20 v2.1.13R
+	(1) Fixed a bug that could cause song titles to be cut off.
+
+--------------------------------------------------------------------------------
 July.7.2023 6:55 v2.1.12R
 	(1) Bug fix. ESE-SCC Maximum was supported.
 

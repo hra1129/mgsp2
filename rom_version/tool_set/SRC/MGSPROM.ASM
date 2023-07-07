@@ -678,8 +678,8 @@ loop:
 		ld			[de], a
 		inc			de
 		inc			hl
-		ld			a, h				; バンク境界に到達したか？
-		cp			a, 0xC0
+		ld			a, h				; バンク境界に到達したか？ (bank0 = 4000h-5FFFh なので、6000h になった場合は次のバンクへ)
+		cp			a, 0x60
 		jr			nz, skip_change_bank
 		; バンク境界に達した場合、bank0 を次のバンクへ切り替える
 		push		de
