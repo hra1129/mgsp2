@@ -754,40 +754,6 @@ get_current_file_entry_wo_chgslot::
 ;		swap_cbr_address に HL, DE の２レジスタが示す entry を入れ替える判定ルーチン
 ;		のアドレスを書き込んでおくこと
 ; ==============================================================================
-		scope	fl_swap_entry
-fl_swap_entry::
-		; get 1st target entry address (A)
-		push	bc
-		call	get_current_file_entry_wo_chgslot
-
-		; get 2nd target entry address (B)
-		pop		af
-		push	hl
-		call	get_current_file_entry_wo_chgslot
-		pop		de
-		push	de
-		push	hl
-
-		; このエントリをスワップするか判定する
-swap_cbr_address	:= code_address + 1
-		call	cbr_compare_normal
-		pop		hl
-		pop		de
-		ret		nc
-
-		; swap entry
-		ld		b, fl_entry_size
-loop:
-		ld		a, [de]
-		ld		c, [hl]
-		ld		[hl], a
-		ld		a, c
-		ld		[de], a
-		inc		hl
-		inc		de
-		djnz	loop
-		ret
-		endscope
 
 ; ==============================================================================
 ;	cbr_compare_normal (ディレクトリエントリ順)
@@ -828,9 +794,27 @@ cbr_compare_title::
 		push	de
 
 		; 曲名が読まれていなければ読み込む
-		call	get_mgs_song_title
+		; 曲名が未読 (アドレスが 0xFFFF) の場合だけ読み込む
+		push	hl
+		ld	hl, FENT_MGS_TITLE_ADDRESS
+		add	hl, de
+		ld	a, [hl]
+		inc	hl
+		and	a, [hl]
+		pop	hl
+		inc	a
+		call	z, get_mgs_song_title
 		ex		de, hl
-		call	get_mgs_song_title
+		; 曲名が未読 (アドレスが 0xFFFF) の場合だけ読み込む
+		push	hl
+		ld	hl, FENT_MGS_TITLE_ADDRESS
+		add	hl, de
+		ld	a, [hl]
+		inc	hl
+		and	a, [hl]
+		pop	hl
+		inc	a
+		call	z, get_mgs_song_title
 
 		pop		ix		; 2つ目
 		pop		iy		; 1つ目
@@ -935,35 +919,83 @@ cbr_compare_shuffle::
 ; ==============================================================================
 		scope	fl_buble_sort
 fl_buble_sort::
-		ld		a, [fl_files]
-		or		a, a					; ファイルが一つも無ければ何もしない
-		ret		z
-		dec		a						; ファイルが一つだけの場合も何もしない
-		ret		z
+		ld	a, [fl_files]
+		or	a, a				; ファイルが一つも無ければ何もしない
+		ret	z
+		dec	a				; ファイルが一つだけの場合も何もしない
+		ret	z
 
 		call	grp_begin_progress_bar
-		ld		bc, 0x0001				; B=着目エントリ(0), C=次のエントリ(1)
+		ld	hl, fl_entry_table
+		ld	[fl_sort_focus], hl
+		ld	a, 1
+		ld	[fl_sort_progress], a
+		ld	b, 0				; B=着目エントリ(0)
 loop1:
-		push	bc
-
+		; スキャン側の初期化 (着目エントリの次から)
+		ld	hl, [fl_sort_focus]
+		ld	de, fl_entry_size
+		add	hl, de
+		ld	[fl_sort_scan], hl
+		ld	a, b
+		inc	a
+		ld	c, a				; C=次のエントリ
 loop2:
 		push	bc
-		ld		a, c
-		call	fl_swap_entry
+		; 比較する (HL=着目エントリ, DE=スキャンエントリ)
+		ld	hl, [fl_sort_focus]
+		ld	de, [fl_sort_scan]
+swap_cbr_address	:= code_address + 1
+		call	cbr_compare_normal
+		jr	nc, no_swap
+		; エントリの内容を入れ替える
+		ld	hl, [fl_sort_focus]
+		ld	de, [fl_sort_scan]
+		push	bc
+		ld	b, fl_entry_size
+swap_loop:
+		ld	a, [de]
+		ld	c, [hl]
+		ld	[hl], a
+		ld	a, c
+		ld	[de], a
+		inc	hl
+		inc	de
+		djnz	swap_loop
+		pop	bc
+no_swap:
+		; プログレスバー更新 (16回に1回)
+		ld	a, [fl_sort_progress]
+		dec	a
+		ld	[fl_sort_progress], a
+		jr	nz, skip_progress
+		ld	a, 16
+		ld	[fl_sort_progress], a
 		call	grp_update_progress_bar
-		pop		bc
-		inc		c
-		ld		a, [fl_files]
-		cp		a, c
-		jr		nz, loop2
+skip_progress:
+		pop	bc
+		; スキャン側を次へ遷移
+		ld	hl, [fl_sort_scan]
+		ld	de, fl_entry_size
+		add	hl, de
+		ld	[fl_sort_scan], hl
+		inc	c
+		ld	a, [fl_files]
+		cp	a, c
+		jr	nz, loop2
 
-		pop		bc
 		; 着目エントリを次へ遷移
-		inc		b
-		inc		c
-		ld		a, [fl_files]
-		cp		a, c
-		jr		nz, loop1
+		ld	hl, [fl_sort_focus]
+		ld	de, fl_entry_size
+		add	hl, de
+		ld	[fl_sort_focus], hl
+		inc	b
+		ld	a, b
+		inc	a
+		ld	c, a
+		ld	a, [fl_files]
+		cp	a, c
+		jr	nz, loop1
 		call	grp_end_progress_bar
 		ret
 		endscope
@@ -1044,6 +1076,12 @@ fl_fib::
 		ds		" " * 63
 read_buffer::
 		ds		" " * (62 + 8 + 1)
+fl_sort_focus:
+		dw		0				; ソート中の着目エントリのアドレス
+fl_sort_scan:
+		dw		0				; ソート中のスキャンエントリのアドレス
+fl_sort_progress:
+		db		0				; プログレスバー更新の間引きカウンタ
 fl_files::
 		db		0				; リストに格納されているエントリの数
 fl_song_files::

@@ -98,6 +98,17 @@ grp_track_volume:				; +0: current volume level, +1: track volume level
 		db		0, 0			; track G
 		db		0, 0			; track H
 		db		0, 0			; dummy
+grp_spot_shadow:				; grp_draw_keyboard_spot の差分描画用シャドウ (28bytes)
+		db		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		db		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+grp_spot_shadow_valid:			; 0: シャドウ無効 (次回は全描画する)
+		db		0
+grp_vol_shadow:					; grp_update_track_volume の差分描画用シャドウ (17tracks * 2bytes)
+		db		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		db		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+grp_vol_shadow_valid:			; 0: シャドウ無効 (次回は全描画する)
+		db		0
+
 grp_yes_no:
 		db		0				; 0: Yes, 1: No
 

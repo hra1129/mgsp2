@@ -627,39 +627,73 @@ skip_number:
 ; ==============================================================================
 		scope	grp_draw_keyboard_spot
 grp_draw_keyboard_spot::
-		ld		hl, 0x3800
+		; 前回描画した内容と比較し、変化が無ければ描画しない
+		ld	a, [grp_spot_shadow_valid]
+		or	a, a
+		jr	z, draw_all
+		ld	hl, mgsp_keyboard_spot_pattern
+		ld	de, grp_spot_shadow
+		ld	b, 28
+cmp_loop:
+		ld	a, [de]
+		cp	a, [hl]
+		jr	nz, draw_all
+		inc	hl
+		inc	de
+		djnz	cmp_loop
+		ret					; 変化無し: 描画を省略する
+draw_all:
+		; 従来通りの全描画を行い、シャドウを更新する
+		call	grp_draw_keyboard_spot_all
+		ld	hl, mgsp_keyboard_spot_pattern
+		ld	de, grp_spot_shadow
+		ld	bc, 28
+		ldir
+		ld	a, 1
+		ld	[grp_spot_shadow_valid], a
+		ret
+		endscope
+
+
+; ==============================================================================
+;	grp_draw_keyboard_spot_all
+;	キーボードの輝点を全行描画する
+; ==============================================================================
+		scope	grp_draw_keyboard_spot_all
+grp_draw_keyboard_spot_all::
+		ld	hl, 0x3800
 		call	SETWRT
 
-		ld		hl, mgsp_keyboard_spot_pattern
-		ld		bc, (4 << 8) | vdp_port0
-		ld		d, 0
+		ld	hl, mgsp_keyboard_spot_pattern
+		ld	bc, (4 << 8) | vdp_port0
+		ld	d, 0
 loop_row:
 		push	bc
-		ld		b, 7
+		ld	b, 7
 loop_column:
-		ld		a, [hl]
-		out		[c], a
-		inc		hl
+		ld	a, [hl]
+		out	[c], a
+		inc	hl
 		push	bc
-		ld		b, 14
-		out		[c], a
+		ld	b, 14
+		out	[c], a
 loop_blank:
-		nop						; VDP待ち
-		nop						; VDP待ち
-		nop						; VDP待ち
-		out		[c], d
+		nop					; VDP待ち
+		nop					; VDP待ち
+		nop					; VDP待ち
+		out	[c], d
 		djnz	loop_blank
-		pop		bc
+		pop	bc
 		djnz	loop_column
 
-		ld		b, 16
+		ld	b, 16
 loop_right_blank:
-		nop						; VDP待ち
-		nop						; VDP待ち
-		nop						; VDP待ち
-		out		[c], d
+		nop					; VDP待ち
+		nop					; VDP待ち
+		nop					; VDP待ち
+		out	[c], d
 		djnz	loop_right_blank
-		pop		bc
+		pop	bc
 		djnz	loop_row
 		ret
 		endscope
@@ -1051,63 +1085,89 @@ skip1:
 		inc		ix
 		djnz	track_loop
 
-		; Update volume level display. 表示自体は左右のどちらか半分だけ処理する
-		ld		c, vdp_port0
-		ld		hl, 0x0000
-		call	SETWRT
-		ld		b, 17				; 17[tracks]
-		ld		hl, grp_track_volume
+		; Update volume level display. 前回描画した内容と比較し、
+		; 変化が無ければ音量表示の描画を省略する
+		ld	a, [grp_vol_shadow_valid]
+		or	a, a
+		jr	z, vol_do_draw
+		ld	hl, grp_track_volume
+		ld	de, grp_vol_shadow
+		ld	b, 34
+vol_cmp_loop:
+		ld	a, [de]
+		cp	a, [hl]
+		jr	nz, vol_do_draw
+		inc	hl
+		inc	de
+		djnz	vol_cmp_loop
+		jr	vol_strip				; 変化無し: 音量表示の描画を省略する
 
+vol_do_draw:
+		; 音量表示 (従来通りの描画)
+		ld	c, vdp_port0
+		ld	hl, 0x0000
+		call	SETWRT
+		ld	b, 17				; 17[tracks]
+		ld	hl, grp_track_volume
 grp_update_track_volume_sub:
 		push	bc
-		ld		b, [hl]				; current volume level
-		inc		hl
-		ld		d, [hl]				; track volume level
-		inc		hl
-		inc		b
-		ld		a, 15
+		ld	b, [hl]			; current volume level
+		inc	hl
+		ld	d, [hl]			; track volume level
+		inc	hl
+		inc	b
+		ld	a, 15
 draw_track_volume_loop:
-		ld		e, 0xDE
-		cp		a, d
-		jp		z, draw_track_volume_skip1
-		cp		a, b
-		jp		c, draw_track_volume_skip1
-		ld		e, 0xC0
+		ld	e, 0xDE
+		cp	a, d
+		jp	z, draw_track_volume_skip1
+		cp	a, b
+		jp	c, draw_track_volume_skip1
+		ld	e, 0xC0
 draw_track_volume_skip1:
-		out		[c], e
-		ld		e, 0
-		nop							; VDP待ち
-		dec		a
-		out		[c], e
-		jp		p, draw_track_volume_loop
-		pop		bc
+		out	[c], e
+		ld	e, 0
+		nop					; VDP待ち
+		dec	a
+		out	[c], e
+		jp	p, draw_track_volume_loop
+		pop	bc
 		djnz	grp_update_track_volume_sub
 
-		; track on/off switch
-		ld		hl, 0x1800 + (5 * 32 + 15)
-		call	SETWRT
+		; シャドウを更新する
+		ld	hl, grp_track_volume
+		ld	de, grp_vol_shadow
+		ld	bc, 34
+		ldir
+		ld	a, 1
+		ld	[grp_vol_shadow_valid], a
 
-		ld		c, vdp_port0
-		ld		iy, [mgs_id_trwadr]
-		ld		de, [mgs_id_trwsiz]
-		ld		b, 17				; 17[tracks]
-		ld		h, 0
+vol_strip:
+		; track on/off switch (従来通りの描画)
+		ld	hl, 0x1800 + (5 * 32 + 15)
+		call	SETWRT
+		ld	c, vdp_port0
+		ld	iy, [mgs_id_trwadr]
+		ld	de, [mgs_id_trwsiz]
+		ld	b, 17				; 17[tracks]
+		ld	h, 0
 track_sw_loop:
-		ld		a, [iy + mgs_twa_track_state]		; track status  0:OFF, 1:ON, 2:MUTE
-		or		a, a
-		jp		z, track_no_active
-		inc		h
+		ld	a, [iy + mgs_twa_track_state]	; track status  0:OFF, 1:ON, 2:MUTE
+		or	a, a
+		jp	z, track_no_active
+		inc	h
 track_no_active:
-		add		a, 68
-		out		[c], a
-		add		iy, de
+		add	a, 68
+		out	[c], a
+		add	iy, de
 		djnz	track_sw_loop
-		ld		a, h
+		ld	a, h
 		push	af
 		call	gaming_led_1tick
-		pop		af
+		pop	af
 		ret
 		endscope
+
 
 ; ==============================================================================
 ;	grp_begin_progress_bar

@@ -291,6 +291,29 @@ s_font_name:
 ;	break)
 ;		all
 ; ==============================================================================
+; ==============================================================================
+;	kanji_select_segment
+;	漢字フォントのセグメントを切り替える (前回と同じなら切替を省略する)
+;	input)
+;		a .... セグメント番号
+;	break)
+;		hl
+; ==============================================================================
+		scope	kanji_select_segment
+kanji_select_segment::
+		push	hl
+		ld	hl, kanji_last_seg
+		cp	a, [hl]
+		jr	z, skip				; 同じセグメントなら切り替えない
+		ld	[hl], a
+		pop	hl
+		jp	mapper_put_p2
+skip:
+		pop	hl
+		ret
+		endscope
+
+
 		scope	put_kanji
 put_kanji::
 		ld		[kanji_target_address], hl
@@ -351,7 +374,7 @@ skip_pfs2:
 		ld		de, kanji_ram0_seg
 		add		hl, de
 		ld		a, [hl]
-		call	mapper_put_p2
+		call	kanji_select_segment	; セグメント切替 (キャッシュ付き)
 		; セグメント内アドレスを求める
 		pop		hl
 		ld		a, h
@@ -378,7 +401,7 @@ skip_phs1:
 		add		hl, hl
 		add		hl, hl
 		ld		a, [kanji_ram0_seg]			; 半角文字は必ず kanji_ram0
-		call	mapper_put_p2
+		call	kanji_select_segment	; セグメント切替 (キャッシュ付き)
 		ld		a, h
 		or		a, 0x80
 		ld		h, a
@@ -470,7 +493,7 @@ skip_pfs2:
 		ld		de, kanji_ram0_seg
 		add		hl, de
 		ld		a, [hl]
-		call	mapper_put_p2
+		call	kanji_select_segment	; セグメント切替 (キャッシュ付き)
 		; セグメント内アドレスを求める
 		pop		hl
 		ld		a, h
@@ -530,7 +553,7 @@ skip_phs1:
 		add		hl, hl
 		add		hl, hl
 		ld		a, [kanji_ram0_seg]			; 半角文字は必ず kanji_ram0
-		call	mapper_put_p2
+		call	kanji_select_segment	; セグメント切替 (キャッシュ付き)
 		ld		a, h
 		or		a, 0x80
 		ld		h, a
@@ -573,6 +596,9 @@ put_string::
 		call	enaslt
 		ei
 		pop		de
+		; セグメント切替キャッシュを無効化する
+		ld	a, 0xFF
+		ld	[kanji_last_seg], a
 
 		ld		hl, kanji_work
 		xor		a, a				; Cy = 0
@@ -624,6 +650,8 @@ exit_put_string_term:
 ; ==============================================================================
 ;	WORKAREA
 ; ==============================================================================
+kanji_last_seg:
+		db		0xFF			; 前回選択した漢字フォントのセグメント (0xFF: 未選択)
 kanji_target_address:
 		dw		0
 kanji_ram_slot:

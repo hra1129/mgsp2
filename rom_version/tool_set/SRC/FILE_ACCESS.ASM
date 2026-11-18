@@ -126,40 +126,6 @@ get_current_file_entry::
 ;		swap_cbr_address に HL, DE の２レジスタが示す entry を入れ替える判定ルーチン
 ;		のアドレスを書き込んでおくこと
 ; ==============================================================================
-		scope	fl_swap_entry
-fl_swap_entry::
-		; get 1st target entry address (A)
-		push	bc							; 2nd target 保存
-		call	get_current_file_entry
-
-		; get 2nd target entry address (B)
-		pop		af							; 2nd target 復元
-		push	hl							; 1st target の entry 保存
-		call	get_current_file_entry
-		pop		de							; 1st target entry 復元
-		push	de							; 1st target entry 保存
-		push	hl							; 2nd target entry 保存, この時点で HL=2nd target entry, DE=1st target entry
-
-		; このエントリをスワップするか判定する
-swap_cbr_address	:= code_address + 1
-		call	cbr_compare_normal
-		pop		hl							; 2nd target entry 復元
-		pop		de							; 1st target entry 復元
-		ret		nc
-
-		; swap entry
-		ld		b, fl_entry_size
-loop:
-		ld		a, [de]
-		ld		c, [hl]
-		ld		[hl], a
-		ld		a, c
-		ld		[de], a
-		inc		hl
-		inc		de
-		djnz	loop
-		ret
-		endscope
 
 ; ==============================================================================
 ;	cbr_compare_normal (ディレクトリエントリ順)
@@ -200,9 +166,44 @@ cbr_compare_title::
 		push	de		; 2つ目 保存
 
 		; 曲名が読まれていなければ読み込む
-		ld		de, sort_song_title1
-		ld		b, 62
+		; 1つ目の曲名: 前回の比較で読み込んだ内容が使える場合は読み直さない
+		ld	de, [title1_cache_addr]
+		ld	a, l
+		cp	a, e
+		jr	nz, title1_load
+		ld	a, h
+		cp	a, d
+		jr	nz, title1_load
+		; エントリの曲データ位置 (バンク/オフセット) が前回と同じか確認する
+		push	hl
+		ld	de, 9
+		add	hl, de
+		ld	de, title1_cache_id
+		ld	b, 3
+title1_id_loop:
+		ld	a, [de]
+		cp	a, [hl]
+		jr	nz, title1_id_mismatch
+		inc	hl
+		inc	de
+		djnz	title1_id_loop
+		pop	hl
+		jr	title2_load
+title1_id_mismatch:
+		pop	hl
+title1_load:
+		ld	[title1_cache_addr], hl
+		push	hl
+		ld	de, 9
+		add	hl, de
+		ld	de, title1_cache_id
+		ld	bc, 3
+		ldir
+		pop	hl
+		ld	de, sort_song_title1
+		ld	b, 62
 		call	get_mgs_song_title
+title2_load:
 		pop		hl		; 2つ目 復元
 		push	hl		; 2つ目 保存
 		ld		de, sort_song_title2
@@ -278,35 +279,87 @@ cbr_compare_shuffle::
 ; ==============================================================================
 		scope	fl_buble_sort
 fl_buble_sort::
-		ld		a, fl_files
-		or		a, a					; ファイルが一つも無ければ何もしない
-		ret		z
-		dec		a						; ファイルが一つだけの場合も何もしない
-		ret		z
+		ld	a, fl_files
+		or	a, a				; ファイルが一つも無ければ何もしない
+		ret	z
+		dec	a				; ファイルが一つだけの場合も何もしない
+		ret	z
+
+		; 曲名バッファはファイル一覧表示と共用なので、キャッシュを無効化する
+		ld	hl, 0
+		ld	[title1_cache_addr], hl
 
 		call	grp_begin_progress_bar
-		ld		bc, 0x0001				; B=着目エントリ(0), C=次のエントリ(1)
+		ld	hl, fl_entry_table
+		ld	[fl_sort_focus], hl
+		ld	a, 1
+		ld	[fl_sort_progress], a
+		ld	b, 0				; B=着目エントリ(0)
 loop1:
-		push	bc
-
+		; スキャン側の初期化 (着目エントリの次から)
+		ld	hl, [fl_sort_focus]
+		ld	de, fl_entry_size
+		add	hl, de
+		ld	[fl_sort_scan], hl
+		ld	a, b
+		inc	a
+		ld	c, a				; C=次のエントリ
 loop2:
 		push	bc
-		ld		a, c
-		call	fl_swap_entry
+		; 比較する (HL=着目エントリ, DE=スキャンエントリ)
+		ld	hl, [fl_sort_focus]
+		ld	de, [fl_sort_scan]
+swap_cbr_address	:= code_address + 1
+		call	cbr_compare_normal
+		jr	nc, no_swap
+		; エントリの内容を入れ替える
+		ld	hl, [fl_sort_focus]
+		ld	de, [fl_sort_scan]
+		push	bc
+		ld	b, fl_entry_size
+swap_loop:
+		ld	a, [de]
+		ld	c, [hl]
+		ld	[hl], a
+		ld	a, c
+		ld	[de], a
+		inc	hl
+		inc	de
+		djnz	swap_loop
+		pop	bc
+no_swap:
+		; プログレスバー更新 (16回に1回)
+		ld	a, [fl_sort_progress]
+		dec	a
+		ld	[fl_sort_progress], a
+		jr	nz, skip_progress
+		ld	a, 16
+		ld	[fl_sort_progress], a
 		call	grp_update_progress_bar
-		pop		bc
-		inc		c
-		ld		a, fl_files
-		cp		a, c
-		jr		nz, loop2
+skip_progress:
+		pop	bc
+		; スキャン側を次へ遷移
+		ld	hl, [fl_sort_scan]
+		ld	de, fl_entry_size
+		add	hl, de
+		ld	[fl_sort_scan], hl
+		inc	c
+		ld	a, fl_files
+		cp	a, c
+		jr	nz, loop2
 
-		pop		bc
 		; 着目エントリを次へ遷移
-		inc		b
-		inc		c
-		ld		a, fl_files
-		cp		a, c
-		jr		nz, loop1
+		ld	hl, [fl_sort_focus]
+		ld	de, fl_entry_size
+		add	hl, de
+		ld	[fl_sort_focus], hl
+		inc	b
+		ld	a, b
+		inc	a
+		ld	c, a
+		ld	a, fl_files
+		cp	a, c
+		jr	nz, loop1
 		call	grp_end_progress_bar
 		ret
 		endscope
@@ -373,6 +426,17 @@ FENT_MGS_ENTRY_INDEX	:= 14
 ;		db		0				; +14, 1byte : Directory entry index
 ;		db		0				; +15, 1byte : Reserved
 ;			endm
+
+fl_sort_focus:
+		dw		0				; ソート中の着目エントリのアドレス
+fl_sort_scan:
+		dw		0				; ソート中のスキャンエントリのアドレス
+fl_sort_progress:
+		db		0				; プログレスバー更新の間引きカウンタ
+title1_cache_addr:
+		dw		0				; 前回 title1 に読み込んだエントリのアドレス (0: 無効)
+title1_cache_id:
+		db		0, 0, 0			; そのエントリの曲データ位置 (バンク, オフセット)
 
 fl_entry_table::
 		space	fl_max_entries * fl_entry_size

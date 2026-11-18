@@ -125,7 +125,11 @@ skip2:
 		or			a, a
 		jp			nz, skip1
 
+		ld		a, [title_scroll_hold]
+		or		a, a
+		jr		nz, skip_update_title	; 曲名が表示幅に収まっていれば再描画しない
 		call		update_title
+skip_update_title:
 		ld			a, title_scroll_wait
 		ld			[title_scroll_timer], a
 skip1:
@@ -1413,6 +1417,12 @@ update_title::
 		ld			a, [target_file_name_position]
 		ld			e, a
 		ld			d, 0
+		or		a, a
+		ld		a, 1
+		jr		z, skip_entry_zero
+		xor		a, a
+skip_entry_zero:
+		ld		[title_entry_zero], a
 		ld			hl, target_file_name
 		add			hl, de
 		ex			de, hl
@@ -1433,6 +1443,14 @@ skip2:
 		inc			a
 skip1:
 		ld			[target_file_name_position], a
+		or		a, a
+		jr		z, set_hold_from_entry
+		xor		a, a
+		ld		[title_scroll_hold], a
+		ret
+set_hold_from_entry:
+		ld		a, [title_entry_zero]
+		ld		[title_scroll_hold], a
 		ret
 		endscope
 
@@ -1515,6 +1533,10 @@ track_mute::
 		db			0xFF, 0xFF, 0xFF			; L, H, B : BHLで下位から 17bit が有効。1=ON, 0=MUTE
 timer_counter::
 		db			0
+title_entry_zero::
+		db			0				; update_title 開始時の表示位置が 0 だったか
+title_scroll_hold::
+		db			0				; 1: 曲名が表示幅に収まっており再描画不要
 title_scroll_timer::
 		db			title_scroll_wait
 
@@ -1620,3 +1642,20 @@ msg_not_enough_memory::
 		endif
 
 end_of_program::
+
+; ==============================================================================
+;	高速化用ワークエリア
+;	※ grp_init は MGSDRV のセグメントをマップしたまま初期化データを転送する
+;	　 ため、初期化データ (GRAPHIC_INIT_DATA) は 0x4000 未満に収める必要がある。
+;	　 ここの変数はファイル末尾に置き、初期化データを押し上げないようにする。
+; ==============================================================================
+grp_spot_shadow:
+		db			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		db			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+grp_spot_shadow_valid:
+		db			0			; 0: シャドウ無効 (次回は全描画する)
+grp_vol_shadow:
+		db			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		db			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+grp_vol_shadow_valid:
+		db			0			; 0: シャドウ無効 (次回は全描画する)

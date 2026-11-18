@@ -1,3 +1,7 @@
+Nov.18.2026 19:30 v2.1.14R
+	(1) Optimization
+
+--------------------------------------------------------------------------------
 July.7.2023 21:20 v2.1.13R
 	(1) Fixed a bug that could cause song titles to be cut off.
 

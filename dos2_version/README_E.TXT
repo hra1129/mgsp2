@@ -1,4 +1,4 @@
-MGSP version 2.1.6		Copyright (C) 2020-2023 HRA!
+MGSP version 2.1.14		Copyright (C) 2020-2026 HRA!
 
 [See in TAB width 4 characters]
 

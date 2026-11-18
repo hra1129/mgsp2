@@ -67,6 +67,10 @@ vdp_port1	:=	0x99
 ; ==============================================================================
 		scope	grp_init
 grp_init::
+		; 差分描画のシャドウを無効化する (次回の表示更新で全描画させる)
+		xor	a, a
+		ld	[grp_spot_shadow_valid], a
+		ld	[grp_vol_shadow_valid], a
 		; GamingLED を検出
 		call	detect_gaming_led
 		ei
