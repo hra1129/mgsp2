@@ -67,10 +67,11 @@ vdp_port1	:=	0x99
 ; ==============================================================================
 		scope	grp_init
 grp_init::
-		; 差分描画のシャドウを無効化する (次回の表示更新で全描画させる)
-		xor	a, a
-		ld	[grp_spot_shadow_valid], a
-		ld	[grp_vol_shadow_valid], a
+		; NOTE(2026-11-18 FIX): grp_spot_shadow_valid / grp_vol_shadow_valid には
+		; ここで触らないこと。grp_init 冒頭では page1 に MGSDRV 本体のセグメントが
+		; マップされており、page1 への書き込みはドライバ側のメモリを破壊する。
+		; 両フラグは COM ファイルイメージで 0 に初期化されているため、
+		; 起動時に明示的にクリアする必要はない。
 		; GamingLED を検出
 		call	detect_gaming_led
 		ld		h, 0x40
@@ -1212,6 +1213,7 @@ transfer_loop:
 ; ==============================================================================
 		scope	grp_draw_keyboard_spot
 grp_draw_keyboard_spot::
+		call	mmap_change_to_tpa		; shadow is in own page1 segment: switch to TPA
 		; 前回描画した内容と比較し、変化が無ければ描画しない
 		ld	a, [grp_spot_shadow_valid]
 		or	a, a
@@ -1226,18 +1228,19 @@ cmp_loop:
 		inc	hl
 		inc	de
 		djnz	cmp_loop
+		call	change_mgsdrv_slot		; restore MGSDRV config
 		ret					; 変化無し: 描画を省略する
 draw_all:
-		; 従来通りの全描画を行い、シャドウを更新する
-		call	grp_draw_keyboard_spot_all
+		; update shadow (still in TPA config), restore config, then draw as before
 		ld	hl, mgsp_keyboard_spot_pattern
 		ld	de, grp_spot_shadow
 		ld	bc, 28
 		ldir
 		ld	a, 1
 		ld	[grp_spot_shadow_valid], a
-		ret
-		endscope
+		call	change_mgsdrv_slot
+		jp	grp_draw_keyboard_spot_all
+endscope
 
 
 ; ==============================================================================
@@ -1762,6 +1765,7 @@ skip1:
 
 		; Update volume level display. 前回描画した内容と比較し、
 		; 変化が無ければ音量表示の描画を省略する
+		call	mmap_change_to_tpa		; shadow is in own page1 segment: switch to TPA
 		ld	a, [grp_vol_shadow_valid]
 		or	a, a
 		jr	z, vol_do_draw
@@ -1775,6 +1779,7 @@ vol_cmp_loop:
 		inc	hl
 		inc	de
 		djnz	vol_cmp_loop
+		call	change_mgsdrv_slot		; restore MGSDRV config
 		jr	vol_strip				; 変化無し: 音量表示の描画を省略する
 
 vol_do_draw:
@@ -1816,6 +1821,7 @@ draw_track_volume_skip1:
 		ldir
 		ld	a, 1
 		ld	[grp_vol_shadow_valid], a
+		call	change_mgsdrv_slot		; restore MGSDRV config
 
 vol_strip:
 		; track on/off switch (従来通りの描画)

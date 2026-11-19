@@ -327,6 +327,15 @@ mgsp_init::
 
 		; show MGSDRV version
 		call		change_mgsdrv_slot
+		; スロット番号を先に退避し、表示は TPA 構成に戻してから行う。
+		; (msg_* は page1 に配置されているため、MGSDRV 構成のまま表示すると
+		;  ドライバセグメントの内容を文字列として読んでしまう)
+		ld			ix, [mgs_id_mibadr]
+		ld			a, [ix + 0]
+		ld			[detect_slot_opll], a
+		ld			a, [ix + 1]
+		ld			[detect_slot_scc], a
+		call		mmap_change_to_tpa
 		ld			de, msg_detect
 		call		puts
 
@@ -354,8 +363,7 @@ mgsp_init::
 		; show OPLL slot number
 		ld			de, msg_opll_slot_num
 		call		puts
-		ld			ix, [mgs_id_mibadr]
-		ld			a, [ix + 0]
+		ld			a, [detect_slot_opll]
 		call		put_slot_num
 		ld			de, msg_ret
 		call		puts
@@ -363,8 +371,7 @@ mgsp_init::
 		; show SCC slot number
 		ld			de, msg_scc_slot_num
 		call		puts
-		ld			ix, [mgs_id_mibadr]
-		ld			a, [ix + 1]
+		ld			a, [detect_slot_scc]
 		call		put_slot_num
 		ld			de, msg_ret
 		call		puts
@@ -1523,6 +1530,11 @@ put_none:
 save_slot:
 		db			0
 		endscope
+
+detect_slot_opll::
+		db			0
+detect_slot_scc::
+		db			0
 
 ; ==============================================================================
 ;	DATA AREA
